@@ -48,8 +48,6 @@ export const useVantaBackground = (effect: string = "waves") => {
                         mouseControls: true,
                         touchControls: true,
                         gyroControls: false,
-                        minHeight: 200.0,
-                        minWidth: 200.0,
                         scale: 1.0,
                         scaleMobile: 1.0,
                         color: 0xff0600,
@@ -63,8 +61,18 @@ export const useVantaBackground = (effect: string = "waves") => {
 
         loadVanta();
 
+        // Handle window resize to make Vanta responsive
+        const handleResize = () => {
+            if (vantaEffect.current && vantaRef.current) {
+                vantaEffect.current.resize();
+            }
+        };
+
+        window.addEventListener("resize", handleResize);
+
         // Cleanup
         return () => {
+            window.removeEventListener("resize", handleResize);
             if (vantaEffect.current) {
                 vantaEffect.current.destroy();
                 vantaEffect.current = null;

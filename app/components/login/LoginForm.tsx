@@ -19,7 +19,7 @@ export const LoginForm: React.FC = () => {
             {/* Left Side - Dark Background with Logo and Branding */}
             <div
                 ref={vantaRef}
-                className="hidden lg:flex lg:w-[60%] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden"
+                className="hidden lg:flex lg:w-[70%] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden"
             >
                 {/* Light effect on top right - Optional, dapat di-hide jika vanta sudah cukup */}
                 {/* <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl" /> */}
@@ -38,12 +38,12 @@ export const LoginForm: React.FC = () => {
                     </div>
 
                     {/* Branding Text */}
-                    <h1 className="text-3xl font-bold mb-2">Selamat Datang di</h1>
-                    <h2 className="text-4xl font-bold mb-4">Dashtern - Dashboard Internship</h2>
+                    <h1 className="text-3xl font-bold mb-3">Selamat Datang di</h1>
+                    <h2 className="text-4xl font-bold mb-2">Dashtern - Dashboard Internship</h2>
                     <p className="text-gray-300 text-sm leading-relaxed max-w-md">
-                        Sistem Management Data Internship
+                        Sistem Management Internship
                         <br />
-                        JADEK
+                        PT. Hyryla Coporation
                     </p>
                 </div>
             </div>
@@ -60,7 +60,7 @@ export const LoginForm: React.FC = () => {
                             height={80}
                             className="mx-auto mb-4"
                         />
-                        <h2 className="text-2xl font-bold text-gray-900">SIRAMA</h2>
+                        <h2 className="text-2xl font-bold text-black">Dashboard Internship</h2>
                     </div>
 
                     {/* Form Header */}
