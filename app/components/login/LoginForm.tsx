@@ -27,7 +27,7 @@ export const LoginForm: React.FC = () => {
                 {/* Content */}
                 <div className="relative z-10 flex flex-col justify-center px-16 text-white">
                     {/* Logo */}
-                    <div className="mb-8">
+                    <div className="mb-2">
                         <Image
                             src="/favicon.ico"
                             alt="Logo"

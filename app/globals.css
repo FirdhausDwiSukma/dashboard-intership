@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Force dark mode to ONLY use .dark class, NEVER media query */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -9,12 +12,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark mode via class */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
+
+/* Optional: Auto-detect system preference if no class is present - handled by JS usuallly, 
+   but for pure CSS fallback let's keep it simple. 
+   We will toggle the 'dark' class on HTML element. 
+*/
 
 body {
   background: var(--background);
