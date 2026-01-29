@@ -185,7 +185,16 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 {/* Main Menu Item */}
                                 {hasSubmenu ? (
                                     <button
-                                        onClick={() => toggleSubmenu(item.label)}
+                                        onClick={() => {
+                                            if (isCollapsed) {
+                                                // Expand sidebar when collapsed so submenu is visible
+                                                toggleCollapse();
+                                                setOpenSubmenu(item.label);
+                                            } else {
+                                                // Toggle submenu in expanded state
+                                                toggleSubmenu(item.label);
+                                            }
+                                        }}
                                         className={cn(
                                             "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                             isParentActive
@@ -217,6 +226,10 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 ) : (
                                     <Link
                                         href={item.href!}
+                                        onClick={() => {
+                                            // Close any open submenu when clicking other menu items
+                                            setOpenSubmenu(null);
+                                        }}
                                         className={cn(
                                             "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                             isActive
@@ -281,6 +294,10 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                             <Link
                                 key={item.href}
                                 href={item.href!}
+                                onClick={() => {
+                                    // Close any open submenu when clicking bottom menu items
+                                    setOpenSubmenu(null);
+                                }}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                     isActive
