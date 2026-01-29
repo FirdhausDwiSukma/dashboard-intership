@@ -6,10 +6,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authService } from "@/app/services/auth";
 import { LoginFormState, LoginFormHandlers } from "@/app/types/auth";
 import { validateLoginForm } from "@/app/lib/validation";
 
 export const useLoginForm = () => {
+    const router = useRouter();
     const [formState, setFormState] = useState<LoginFormState>({
         username: "",
         password: "",
@@ -54,22 +57,24 @@ export const useLoginForm = () => {
         setFormState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            // TODO: Implement actual login API call here
-            // For now, just simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // Call API
+            const response = await authService.login(
+                formState.username,
+                formState.password
+            );
 
-            console.log("Login successful:", {
-                username: formState.username,
-                password: "***hidden***",
-            });
+            // Store token
+            localStorage.setItem("token", response.token);
+            // Optional: Store username if needed
+            localStorage.setItem("username", formState.username);
 
-            // TODO: Handle successful login (redirect, store token, etc.)
-            alert(`Login berhasil! Username: ${formState.username}`);
-        } catch (error) {
+            // Redirect to dashboard
+            router.push("/dashboard");
+        } catch (error: any) {
             setFormState((prev) => ({
                 ...prev,
                 errors: {
-                    general: "Terjadi kesalahan saat login. Silakan coba lagi.",
+                    general: error.message || "Terjadi kesalahan saat login.",
                 },
             }));
         } finally {
