@@ -14,6 +14,11 @@ import {
     Search,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
+    ChevronUp,
+    FileText,
+    HelpCircle,
+    type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import Image from "next/image";
@@ -25,18 +30,38 @@ interface SidebarProps {
     toggleCollapse: () => void;
 }
 
-const sidebarItems = [
+interface SidebarItem {
+    icon: LucideIcon;
+    label: string;
+    href?: string;
+    submenu?: SidebarItem[];
+}
+
+const sidebarItems: SidebarItem[] = [
     { icon: Home, label: "Home", href: "/dashboard" },
+    {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        submenu: [
+            { icon: PieChart, label: "Analytics", href: "/dashboard/analytics" },
+            { icon: FileText, label: "Report", href: "/dashboard/report" },
+        ]
+    },
     { icon: Users, label: "Users", href: "/dashboard/users" },
-    { icon: PieChart, label: "Analytics", href: "/dashboard/analytics" },
-    { icon: Bell, label: "Notifications", href: "/dashboard/notifications" },
+];
+
+// Bottom menu items (above user profile)
+const bottomMenuItems: SidebarItem[] = [
     { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    { icon: Bell, label: "Notifications", href: "/dashboard/notifications" },
+    { icon: HelpCircle, label: "Support", href: "/dashboard/support" },
 ];
 
 export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [username, setUsername] = useState<string>("Admin");
+    const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("username");
@@ -49,6 +74,10 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
         localStorage.removeItem("token");
         localStorage.removeItem("username");
         router.push("/login");
+    };
+
+    const toggleSubmenu = (label: string) => {
+        setOpenSubmenu(openSubmenu === label ? null : label);
     };
 
     return (
@@ -81,7 +110,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                             D
                         </div>
                         <span className={cn(
-                            "text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent whitespace-nowrap transition-opacity duration-300",
+                            "text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-900 dark:from-white dark:to-white bg-clip-text text-transparent whitespace-nowrap transition-opacity duration-300",
                             isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100"
                         )}>
                             Dashtern
@@ -127,11 +156,112 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                     )}
 
                     {sidebarItems.map((item) => {
+                        const hasSubmenu = item.submenu && item.submenu.length > 0;
+                        const isSubmenuOpen = openSubmenu === item.label;
+                        const isParentActive = item.submenu?.some(sub => pathname === sub.href);
+                        const isActive = pathname === item.href;
+
+                        return (
+                            <div key={item.label}>
+                                {/* Main Menu Item */}
+                                {hasSubmenu ? (
+                                    <button
+                                        onClick={() => toggleSubmenu(item.label)}
+                                        className={cn(
+                                            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                                            isParentActive
+                                                ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400"
+                                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200",
+                                            isCollapsed && "justify-center px-2"
+                                        )}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <item.icon
+                                            className={cn(
+                                                "w-5 h-5 transition-colors shrink-0",
+                                                isParentActive
+                                                    ? "text-red-600 dark:text-red-400"
+                                                    : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
+                                            )}
+                                        />
+                                        {!isCollapsed && (
+                                            <>
+                                                <span className="whitespace-nowrap flex-1 text-left">{item.label}</span>
+                                                {isSubmenuOpen ? (
+                                                    <ChevronUp className="w-4 h-4" />
+                                                ) : (
+                                                    <ChevronDown className="w-4 h-4" />
+                                                )}
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <Link
+                                        href={item.href!}
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                                            isActive
+                                                ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400"
+                                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200",
+                                            isCollapsed && "justify-center px-2"
+                                        )}
+                                        title={isCollapsed ? item.label : undefined}
+                                    >
+                                        <item.icon
+                                            className={cn(
+                                                "w-5 h-5 transition-colors shrink-0",
+                                                isActive
+                                                    ? "text-red-600 dark:text-red-400"
+                                                    : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
+                                            )}
+                                        />
+                                        {!isCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                                    </Link>
+                                )}
+
+                                {/* Submenu Items */}
+                                {hasSubmenu && isSubmenuOpen && !isCollapsed && (
+                                    <div className="mt-1 ml-4 space-y-1">
+                                        {item.submenu!.map((subItem) => {
+                                            const isSubActive = pathname === subItem.href;
+                                            return (
+                                                <Link
+                                                    key={subItem.href}
+                                                    href={subItem.href!}
+                                                    className={cn(
+                                                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group",
+                                                        isSubActive
+                                                            ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-medium"
+                                                            : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
+                                                    )}
+                                                >
+                                                    <subItem.icon
+                                                        className={cn(
+                                                            "w-4 h-4 transition-colors shrink-0",
+                                                            isSubActive
+                                                                ? "text-red-600 dark:text-red-400"
+                                                                : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
+                                                        )}
+                                                    />
+                                                    <span className="whitespace-nowrap">{subItem.label}</span>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Bottom Menu Items */}
+                <div className="px-4 py-2 space-y-1">
+                    {bottomMenuItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
                                 key={item.href}
-                                href={item.href}
+                                href={item.href!}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                     isActive
