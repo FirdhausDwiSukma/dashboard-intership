@@ -71,21 +71,31 @@ export const useLoginForm = () => {
             // Redirect to dashboard
             router.push("/dashboard");
         } catch (error: any) {
+            const errorMessage = error.message || "Terjadi kesalahan saat login.";
+
+            // User requested to show all API errors in the main notification box (general error)
             setFormState((prev) => ({
                 ...prev,
                 errors: {
-                    general: error.message || "Terjadi kesalahan saat login.",
+                    general: errorMessage,
                 },
             }));
-        } finally {
             setFormState((prev) => ({ ...prev, isLoading: false }));
         }
+    };
+
+    const toggleShowPassword = () => {
+        setFormState((prev) => ({
+            ...prev,
+            showPassword: !prev.showPassword,
+        }));
     };
 
     const handlers: LoginFormHandlers = {
         handleUsernameChange,
         handlePasswordChange,
         handleSubmit,
+        toggleShowPassword,
     };
 
     return {

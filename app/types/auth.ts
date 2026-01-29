@@ -13,6 +13,7 @@ export interface LoginFormState {
     password: string;
     isLoading: boolean;
     errors: ValidationErrors;
+    showPassword?: boolean;
 }
 
 export interface ValidationErrors {
@@ -25,4 +26,5 @@ export interface LoginFormHandlers {
     handleUsernameChange: (value: string) => void;
     handlePasswordChange: (value: string) => void;
     handleSubmit: (e: React.FormEvent) => Promise<void>;
+    toggleShowPassword?: () => void;
 }

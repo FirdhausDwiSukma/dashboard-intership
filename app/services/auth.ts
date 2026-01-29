@@ -28,7 +28,18 @@ export const authService = {
         } catch (error: any) {
             // Throw a clean error message
             const apiError = error as ApiError;
-            const message = apiError.response?.data?.error || 'Login failed. Please check your connection.';
+            const errorData = apiError.response?.data?.error;
+
+            let message = 'Login failed. Please check your connection.';
+
+            if (errorData === 'USER_NOT_FOUND') {
+                message = 'Akun tidak ditemukan.';
+            } else if (errorData === 'INVALID_PASSWORD') {
+                message = 'Password salah.';
+            } else if (errorData) {
+                message = errorData;
+            }
+
             throw new Error(message);
         }
     }
