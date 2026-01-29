@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
     Home,
     Users,
@@ -62,6 +62,8 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     const router = useRouter();
     const [username, setUsername] = useState<string>("Admin");
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+    const [showProfileCard, setShowProfileCard] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("username");
@@ -79,6 +81,23 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     const toggleSubmenu = (label: string) => {
         setOpenSubmenu(openSubmenu === label ? null : label);
     };
+
+    // Close profile card when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setShowProfileCard(false);
+            }
+        };
+
+        if (showProfileCard) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showProfileCard]);
 
     return (
         <>
@@ -286,14 +305,17 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                 </div>
 
                 {/* User Profile Section (Bottom) */}
-                <div className={cn("p-4 border-t border-gray-200 dark:border-gray-800", isCollapsed && "p-2")}>
+                <div
+                    ref={profileRef}
+                    className={cn("relative p-4 border-t border-gray-200 dark:border-gray-800", isCollapsed && "p-2")}
+                >
                     <div
-                        onClick={handleLogout}
+                        onClick={() => setShowProfileCard(!showProfileCard)}
                         className={cn(
                             "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group",
                             isCollapsed && "justify-center"
                         )}
-                        title="Logout"
+                        title={isCollapsed ? username : undefined}
                     >
                         <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative shrink-0">
                             {/* Placeholder Avatar */}
@@ -311,10 +333,65 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                         admin@dashtern.com
                                     </p>
                                 </div>
-                                <LogOut className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition-colors" />
+                                <ChevronUp
+                                    className={cn(
+                                        "w-4 h-4 text-gray-400 transition-transform",
+                                        showProfileCard && "rotate-180"
+                                    )}
+                                />
                             </>
                         )}
                     </div>
+
+                    {/* Profile Dropdown Card */}
+                    {showProfileCard && (
+                        <div
+                            className={cn(
+                                "absolute left-full bottom-2 ml-2 w-64 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 p-4 z-50",
+                                "animate-in fade-in slide-in-from-left-2 duration-200"
+                            )}
+                        >
+                            {/* Profile Photo & Info */}
+                            <div className="flex flex-col items-center text-center mb-4">
+                                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative mb-3">
+                                    <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold text-2xl">
+                                        {username.charAt(0).toUpperCase()}
+                                    </div>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {username}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    admin@dashtern.com
+                                </p>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t border-gray-200 dark:border-gray-800 my-3"></div>
+
+                            {/* Menu Items */}
+                            <div className="space-y-1">
+                                <Link
+                                    href="/dashboard/settings"
+                                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                    onClick={() => setShowProfileCard(false)}
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    <span>Settings</span>
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        setShowProfileCard(false);
+                                        handleLogout();
+                                    }}
+                                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </aside>
         </>
