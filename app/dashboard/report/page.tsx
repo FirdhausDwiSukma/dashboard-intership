@@ -11,12 +11,12 @@ export default function ReportPage() {
 
             {/* Report Types */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-red-500 transition-colors cursor-pointer">
+                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-primary-500 transition-colors cursor-pointer">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sales Report</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                         View detailed sales analytics and trends
                     </p>
-                    <button className="mt-4 text-red-600 dark:text-red-400 text-sm font-medium hover:underline">
+                    <button className="mt-4 text-primary-600 dark:text-primary-400 text-sm font-medium hover:underline">
                         Generate Report →
                     </button>
                 </div>
@@ -50,7 +50,7 @@ export default function ReportPage() {
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">{report}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Generated 2 days ago</p>
                             </div>
-                            <button className="text-sm text-red-600 dark:text-red-400 hover:underline">Download</button>
+                            <button className="text-sm text-primary-600 dark:text-primary-400 hover:underline">Download</button>
                         </div>
                     ))}
                 </div>

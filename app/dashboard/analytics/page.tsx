@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
                 <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
                     <p className="text-sm text-gray-500 dark:text-gray-400">Conversion Rate</p>
                     <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">3.2%</p>
-                    <p className="text-sm text-red-600 dark:text-red-400 mt-2">-2% from last month</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">-2% from last month</p>
                 </div>
             </div>
 

@@ -125,7 +125,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                     isCollapsed ? "justify-center px-0" : "px-6 justify-between"
                 )}>
                     <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center text-white font-bold shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold shrink-0">
                             D
                         </div>
                         <span className={cn(
@@ -162,7 +162,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 <input
                                     type="text"
                                     placeholder="Search"
-                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                                 />
                             </>
                         )}
@@ -189,7 +189,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                         className={cn(
                                             "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                             isParentActive
-                                                ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400"
+                                                ? "bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400"
                                                 : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200",
                                             isCollapsed && "justify-center px-2"
                                         )}
@@ -199,7 +199,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                             className={cn(
                                                 "w-5 h-5 transition-colors shrink-0",
                                                 isParentActive
-                                                    ? "text-red-600 dark:text-red-400"
+                                                    ? "text-primary-600 dark:text-primary-400"
                                                     : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
                                             )}
                                         />
@@ -220,7 +220,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                         className={cn(
                                             "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                             isActive
-                                                ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400"
+                                                ? "bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400"
                                                 : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200",
                                             isCollapsed && "justify-center px-2"
                                         )}
@@ -230,7 +230,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                             className={cn(
                                                 "w-5 h-5 transition-colors shrink-0",
                                                 isActive
-                                                    ? "text-red-600 dark:text-red-400"
+                                                    ? "text-primary-600 dark:text-primary-400"
                                                     : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
                                             )}
                                         />
@@ -250,7 +250,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                                     className={cn(
                                                         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group",
                                                         isSubActive
-                                                            ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-medium"
+                                                            ? "bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400 font-medium"
                                                             : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
                                                     )}
                                                 >
@@ -258,7 +258,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                                         className={cn(
                                                             "w-4 h-4 transition-colors shrink-0",
                                                             isSubActive
-                                                                ? "text-red-600 dark:text-red-400"
+                                                                ? "text-primary-600 dark:text-primary-400"
                                                                 : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
                                                         )}
                                                     />
@@ -284,7 +284,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
                                     isActive
-                                        ? "bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400"
+                                        ? "bg-primary-50 dark:bg-primary-900/10 text-primary-600 dark:text-primary-400"
                                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200",
                                     isCollapsed && "justify-center px-2"
                                 )}
@@ -294,7 +294,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                     className={cn(
                                         "w-5 h-5 transition-colors shrink-0",
                                         isActive
-                                            ? "text-red-600 dark:text-red-400"
+                                            ? "text-primary-600 dark:text-primary-400"
                                             : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
                                     )}
                                 />

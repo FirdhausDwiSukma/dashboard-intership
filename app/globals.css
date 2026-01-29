@@ -18,6 +18,20 @@
   --foreground: #ededed;
 }
 
+/* Custom Primary Color (#d94333) */
+@theme {
+  --color-primary-50: #fef2f2;
+  --color-primary-100: #fee2e2;
+  --color-primary-200: #fecaca;
+  --color-primary-300: #fca5a5;
+  --color-primary-400: #f87171;
+  --color-primary-500: #d94333;
+  --color-primary-600: #c23b2e;
+  --color-primary-700: #a83329;
+  --color-primary-800: #8e2b24;
+  --color-primary-900: #74231f;
+}
+
 /* Optional: Auto-detect system preference if no class is present - handled by JS usuallly, 
    but for pure CSS fallback let's keep it simple. 
    We will toggle the 'dark' class on HTML element. 

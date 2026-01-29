@@ -53,7 +53,7 @@ export default function ProfilePage() {
                                     <input
                                         type="text"
                                         defaultValue="Admin"
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
                             <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                                    className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
                                 >
                                     Save Changes
                                 </button>

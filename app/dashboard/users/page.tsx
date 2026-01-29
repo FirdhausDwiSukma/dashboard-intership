@@ -16,7 +16,7 @@ export default function UsersPage() {
                         Manage your users and permissions
                     </p>
                 </div>
-                <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                <button className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">
                     Add User
                 </button>
             </div>
@@ -41,14 +41,14 @@ export default function UsersPage() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{user.role}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.status === "Active"
-                                            ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                            : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                        : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                                         }`}>
                                         {user.status}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    <button className="text-red-600 dark:text-red-400 hover:underline mr-3">Edit</button>
+                                    <button className="text-primary-600 dark:text-primary-400 hover:underline mr-3">Edit</button>
                                     <button className="text-gray-600 dark:text-gray-400 hover:underline">Delete</button>
                                 </td>
                             </tr>

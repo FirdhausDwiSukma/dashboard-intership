@@ -11,8 +11,8 @@ export default function SupportPage() {
 
             {/* Support Options */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 text-center hover:border-red-500 transition-colors cursor-pointer">
-                    <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 text-center hover:border-primary-500 transition-colors cursor-pointer">
+                    <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-2xl">📚</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Documentation</h3>
@@ -53,7 +53,7 @@ export default function SupportPage() {
                         <input
                             type="text"
                             placeholder="What do you need help with?"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                     </div>
                     <div>
@@ -68,7 +68,7 @@ export default function SupportPage() {
                     </div>
                     <button
                         type="submit"
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                        className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
                     >
                         Send Message
                     </button>

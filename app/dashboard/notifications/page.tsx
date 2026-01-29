@@ -16,7 +16,7 @@ export default function NotificationsPage() {
                         View and manage your notifications
                     </p>
                 </div>
-                <button className="text-sm text-red-600 dark:text-red-400 font-medium hover:underline">
+                <button className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">
                     Mark all as read
                 </button>
             </div>
@@ -26,7 +26,7 @@ export default function NotificationsPage() {
                 {notifications.map((notif) => (
                     <div
                         key={notif.id}
-                        className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:border-red-500 transition-colors cursor-pointer ${!notif.read ? "border-l-4 border-l-red-500" : ""
+                        className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer ${!notif.read ? "border-l-4 border-l-primary-500" : ""
                             }`}
                     >
                         <div className="flex items-start justify-between">
@@ -34,7 +34,7 @@ export default function NotificationsPage() {
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{notif.title}</h3>
                                     {!notif.read && (
-                                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                                        <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
                                     )}
                                 </div>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{notif.message}</p>
