@@ -5,8 +5,8 @@
 
 "use client";
 
-import React from "react";
-import { X, UserPlus, Loader2 } from "lucide-react";
+import React, { useState } from "react";
+import { X, UserPlus, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAddUserForm } from "@/app/hooks/useAddUserForm";
 import { AVAILABLE_ROLES } from "@/app/types/addUser";
 
@@ -28,10 +28,24 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
         },
     });
 
+    // Password visibility state
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Handle backdrop click to close modal
+    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        // Only close if clicking the backdrop itself, not the modal content
+        if (e.target === e.currentTarget && !formState.isLoading) {
+            onClose();
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={handleBackdropClick}
+        >
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
@@ -49,7 +63,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handlers.handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handlers.handleSubmit} noValidate className="p-6 space-y-4">
                     {/* General Error */}
                     {formState.errors.general && (
                         <div className="p-4 rounded-lg bg-red-50 border border-red-200">
@@ -67,8 +81,8 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                             value={formState.fullName}
                             onChange={(e) => handlers.handleChange("fullName", e.target.value)}
                             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.fullName
-                                    ? "border-red-500"
-                                    : "border-gray-300 dark:border-gray-600"
+                                ? "border-red-500"
+                                : "border-gray-300 dark:border-gray-600"
                                 }`}
                             placeholder="John Doe"
                             disabled={formState.isLoading}
@@ -88,8 +102,8 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                             value={formState.username}
                             onChange={(e) => handlers.handleChange("username", e.target.value)}
                             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.username
-                                    ? "border-red-500"
-                                    : "border-gray-300 dark:border-gray-600"
+                                ? "border-red-500"
+                                : "border-gray-300 dark:border-gray-600"
                                 }`}
                             placeholder="john_doe"
                             disabled={formState.isLoading}
@@ -109,8 +123,8 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                             value={formState.email}
                             onChange={(e) => handlers.handleChange("email", e.target.value)}
                             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.email
-                                    ? "border-red-500"
-                                    : "border-gray-300 dark:border-gray-600"
+                                ? "border-red-500"
+                                : "border-gray-300 dark:border-gray-600"
                                 }`}
                             placeholder="john@example.com"
                             disabled={formState.isLoading}
@@ -125,22 +139,45 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Password <span className="text-red-500">*</span>
                         </label>
-                        <input
-                            type="password"
-                            value={formState.password}
-                            onChange={(e) => handlers.handleChange("password", e.target.value)}
-                            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.password
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={formState.password}
+                                onChange={(e) => handlers.handleChange("password", e.target.value)}
+                                className={`w-full px-3 py-2 pr-10 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.password
                                     ? "border-red-500"
                                     : "border-gray-300 dark:border-gray-600"
-                                }`}
-                            placeholder="••••••••"
-                            disabled={formState.isLoading}
-                            minLength={6}
-                        />
+                                    }`}
+                                placeholder="••••••••"
+                                disabled={formState.isLoading}
+                                minLength={8}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </button>
+                        </div>
                         {formState.errors.password && (
                             <p className="mt-1 text-sm text-red-600">{formState.errors.password}</p>
                         )}
-                        <p className="mt-1 text-xs text-gray-500">Minimum 6 characters</p>
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                            <p className="font-medium">Password must contain:</p>
+                            <ul className="list-disc list-inside space-y-0.5 ml-2">
+                                <li>At least 8 characters</li>
+                                <li>One uppercase letter (A-Z)</li>
+                                <li>One lowercase letter (a-z)</li>
+                                <li>One number (0-9)</li>
+                                <li>One special character (@#$%^&*!)</li>
+                            </ul>
+                        </div>
                     </div>
 
                     {/* Role */}
@@ -152,11 +189,12 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                             value={formState.roleId}
                             onChange={(e) => handlers.handleChange("roleId", parseInt(e.target.value))}
                             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${formState.errors.roleId
-                                    ? "border-red-500"
-                                    : "border-gray-300 dark:border-gray-600"
+                                ? "border-red-500"
+                                : "border-gray-300 dark:border-gray-600"
                                 }`}
                             disabled={formState.isLoading}
                         >
+                            <option value={0} disabled>Select a role</option>
                             {AVAILABLE_ROLES.map((role) => (
                                 <option key={role.id} value={role.id}>
                                     {role.displayName}

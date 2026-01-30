@@ -18,7 +18,7 @@ const INITIAL_FORM_STATE: AddUserFormData = {
     username: "",
     email: "",
     password: "",
-    roleId: 4, // Default to intern
+    roleId: 0, // No default selection - user must choose
 };
 
 interface UseAddUserFormProps {
@@ -63,11 +63,27 @@ export const useAddUserForm = ({ onSuccess, onError }: UseAddUserFormProps = {})
             errors.email = "Please enter a valid email address";
         }
 
-        // Password validation
+        // Password validation - Strong password requirements
         if (!formState.password) {
             errors.password = "Password is required";
-        } else if (formState.password.length < 6) {
-            errors.password = "Password must be at least 6 characters";
+        } else {
+            const minLength = 8;
+            const hasUppercase = /[A-Z]/.test(formState.password);
+            const hasLowercase = /[a-z]/.test(formState.password);
+            const hasNumber = /[0-9]/.test(formState.password);
+            const hasSpecialChar = /[@#$%^&*!]/.test(formState.password);
+
+            if (formState.password.length < minLength) {
+                errors.password = `Password must be at least ${minLength} characters`;
+            } else if (!hasUppercase) {
+                errors.password = "Password must contain at least one uppercase letter";
+            } else if (!hasLowercase) {
+                errors.password = "Password must contain at least one lowercase letter";
+            } else if (!hasNumber) {
+                errors.password = "Password must contain at least one number";
+            } else if (!hasSpecialChar) {
+                errors.password = "Password must contain at least one special character (@#$%^&*!)";
+            }
         }
 
         // Role validation

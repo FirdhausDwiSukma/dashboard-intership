@@ -69,6 +69,9 @@ export default function UsersPage() {
                         return bValue.localeCompare(aValue);
                     }
                 });
+            } else {
+                // Default: sort by ID descending (newest first)
+                sortedData = [...response.data].sort((a, b) => b.id - a.id);
             }
 
             setUsers(sortedData);
@@ -102,13 +105,20 @@ export default function UsersPage() {
     };
 
     // Handle page change
-    // Handle sort column click
+    // Handle sort column click with 3-state cycle:
+    // null (default: newest first) -> asc -> desc -> null
     const handleSort = (column: SortColumn) => {
         if (sortColumn === column) {
-            // Toggle sort order
-            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+            // Same column clicked - cycle through states
+            if (sortOrder === "asc") {
+                setSortOrder("desc");
+            } else {
+                // desc -> back to default (null)
+                setSortColumn(null);
+                setSortOrder("asc");
+            }
         } else {
-            // New column, default to ascending
+            // New column clicked - start with ascending
             setSortColumn(column);
             setSortOrder("asc");
         }
