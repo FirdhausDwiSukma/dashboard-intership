@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/app/components/dashboard/Sidebar";
 import { Header } from "@/app/components/dashboard/Header";
+import { Breadcrumb } from "@/app/components/dashboard/Breadcrumb";
 import { cn } from "@/app/lib/utils";
 
 export default function DashboardLayout({
@@ -30,6 +31,7 @@ export default function DashboardLayout({
                 // If static, we don't need margin. Flex layout handles it.
             )}>
                 <Header onMenuClick={() => setSidebarOpen(true)} />
+                <Breadcrumb />
 
                 <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
                     {children}
