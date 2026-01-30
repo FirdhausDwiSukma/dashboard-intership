@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
+import { AddUserModal } from "@/app/components/users/AddUserModal";
 import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
@@ -26,6 +27,9 @@ export default function UsersPage() {
     // Sort state
     const [sortColumn, setSortColumn] = useState<SortColumn>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+
+    // Modal state
+    const [showAddUserModal, setShowAddUserModal] = useState(false);
 
     // Fetch users data when page, entries, or sort changes
     useEffect(() => {
@@ -174,7 +178,10 @@ export default function UsersPage() {
                         {totalUsers} users
                     </span>
                 </div>
-                <button className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">
+                <button
+                    onClick={() => setShowAddUserModal(true)}
+                    className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
+                >
                     Add User
                 </button>
             </div>
@@ -398,6 +405,17 @@ export default function UsersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Add User Modal */}
+            <AddUserModal
+                isOpen={showAddUserModal}
+                onClose={() => setShowAddUserModal(false)}
+                onSuccess={() => {
+                    // Reload users after successful creation
+                    loadUsers();
+                    loadTotalCount();
+                }}
+            />
         </div>
     );
 }

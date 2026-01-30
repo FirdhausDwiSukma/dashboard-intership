@@ -3,6 +3,8 @@
  * Connects to the backend API
  */
 
+import { fetchWithAuth } from "@/app/utils/authHelper";
+
 // Base API URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -34,7 +36,7 @@ export interface UsersResponse {
  */
 export async function fetchUsers(page: number = 1, limit: number = 10): Promise<UsersResponse> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users?page=${page}&limit=${limit}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users?page=${page}&limit=${limit}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -61,7 +63,7 @@ export async function fetchUsers(page: number = 1, limit: number = 10): Promise<
 export async function getTotalUsersCount(): Promise<number> {
     try {
         // We can get this from the users endpoint
-        const response = await fetch(`${API_BASE_URL}/api/users?page=1&limit=1`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users?page=1&limit=1`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -80,7 +82,7 @@ export async function getTotalUsersCount(): Promise<number> {
  */
 export async function getUserById(id: number): Promise<User | null> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/${id}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${id}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -97,31 +99,34 @@ export async function getUserById(id: number): Promise<User | null> {
 /**
  * Create a new user
  */
-export async function createUser(userData: {
-    full_name: string;
-    username: string;
-    email: string;
-    password: string;
-    role_id: number;
-}): Promise<User | null> {
+export async function createUser(
+    fullName: string,
+    username: string,
+    email: string,
+    password: string,
+    roleId: number
+): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(userData),
+            body: JSON.stringify({
+                full_name: fullName,
+                username,
+                email,
+                password,
+                role_id: roleId,
+            }),
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
-        return result.user;
+        return true;
     } catch (error) {
         console.error("Error creating user:", error);
-        return null;
+        throw error; // Re-throw to let the caller handle it
     }
 }
 
@@ -162,7 +167,7 @@ export async function updateUser(
  */
 export async function deactivateUser(id: number): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${id}`, {
             method: "DELETE",
         });
 
@@ -184,7 +189,7 @@ export async function deactivateUser(id: number): Promise<boolean> {
  */
 export async function hardDeleteUser(id: number): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/${id}/permanent`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${id}/permanent`, {
             method: "DELETE",
         });
 

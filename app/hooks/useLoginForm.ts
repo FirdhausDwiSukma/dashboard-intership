@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { authService } from "@/app/services/auth";
 import { LoginFormState, LoginFormHandlers } from "@/app/types/auth";
 import { validateLoginForm } from "@/app/lib/validation";
+import { authHelper } from "@/app/utils/authHelper";
 
 export const useLoginForm = () => {
     const router = useRouter();
@@ -63,10 +64,8 @@ export const useLoginForm = () => {
                 formState.password
             );
 
-            // Store token
-            localStorage.setItem("token", response.token);
-            // Optional: Store username if needed
-            localStorage.setItem("username", formState.username);
+            // Store token using authHelper
+            authHelper.setToken(response.token);
 
             // Redirect to dashboard
             router.push("/dashboard");

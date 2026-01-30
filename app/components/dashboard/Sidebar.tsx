@@ -18,6 +18,7 @@ import {
     ChevronUp,
     FileText,
     HelpCircle,
+    GraduationCap,
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
@@ -48,6 +49,7 @@ const sidebarItems: SidebarItem[] = [
         ]
     },
     { icon: Users, label: "Users", href: "/dashboard/users" },
+    { icon: GraduationCap, label: "Intership Management", href: "/dashboard/interns" },
 ];
 
 // Bottom menu items (above user profile)
