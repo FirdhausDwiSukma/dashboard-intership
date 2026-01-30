@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
-import { Pencil, Trash2, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
+import { cn } from "@/app/lib/utils";
+
+type SortColumn = "name" | "status" | "role" | "pic" | null;
+type SortOrder = "asc" | "desc";
 
 export default function UsersPage() {
     // State management
@@ -15,10 +19,18 @@ export default function UsersPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Fetch users data when page or entries per page changes
+    // Selection state
+    const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+    const [selectAll, setSelectAll] = useState(false);
+
+    // Sort state
+    const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+
+    // Fetch users data when page, entries, or sort changes
     useEffect(() => {
         loadUsers();
-    }, [currentPage, entriesPerPage]);
+    }, [currentPage, entriesPerPage, sortColumn, sortOrder]);
 
     // Load total count on mount
     useEffect(() => {
@@ -30,9 +42,38 @@ export default function UsersPage() {
         setIsLoading(true);
         try {
             const response = await fetchUsers(currentPage, entriesPerPage);
-            setUsers(response.data);
+            let sortedData = response.data;
+
+            // Apply sorting if needed
+            if (sortColumn) {
+                sortedData = [...response.data].sort((a, b) => {
+                    let aValue = "";
+                    let bValue = "";
+
+                    // Handle different column types
+                    if (sortColumn === "name") {
+                        aValue = a.name.toLowerCase();
+                        bValue = b.name.toLowerCase();
+                    } else {
+                        aValue = a[sortColumn].toLowerCase();
+                        bValue = b[sortColumn].toLowerCase();
+                    }
+
+                    if (sortOrder === "asc") {
+                        return aValue.localeCompare(bValue);
+                    } else {
+                        return bValue.localeCompare(aValue);
+                    }
+                });
+            }
+
+            setUsers(sortedData);
             setTotalPages(response.totalPages);
             setTotalUsers(response.total);
+
+            // Reset selection when data changes
+            setSelectedUsers(new Set());
+            setSelectAll(false);
         } catch (error) {
             console.error("Error loading users:", error);
         } finally {
@@ -57,6 +98,40 @@ export default function UsersPage() {
     };
 
     // Handle page change
+    // Handle sort column click
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn === column) {
+            // Toggle sort order
+            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+        } else {
+            // New column, default to ascending
+            setSortColumn(column);
+            setSortOrder("asc");
+        }
+    };
+
+    // Handle select all checkbox
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setSelectedUsers(new Set());
+        } else {
+            setSelectedUsers(new Set(users.map(u => u.id)));
+        }
+        setSelectAll(!selectAll);
+    };
+
+    // Handle individual checkbox
+    const handleSelectUser = (userId: number) => {
+        const newSelected = new Set(selectedUsers);
+        if (newSelected.has(userId)) {
+            newSelected.delete(userId);
+        } else {
+            newSelected.add(userId);
+        }
+        setSelectedUsers(newSelected);
+        setSelectAll(newSelected.size === users.length && users.length > 0);
+    };
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
@@ -122,18 +197,93 @@ export default function UsersPage() {
                     <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Name
+                                {/* Checkbox Column */}
+                                <th className="px-6 py-3 w-12">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectAll}
+                                        onChange={handleSelectAll}
+                                        className="w-4 h-4 rounded cursor-pointer"
+                                    />
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Status
+
+                                {/* Name Column with Sort */}
+                                <th className="px-6 py-3 text-left">
+                                    <button
+                                        onClick={() => handleSort("name")}
+                                        className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                    >
+                                        Name
+                                        {sortColumn === "name" ? (
+                                            sortOrder === "asc" ? (
+                                                <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            ) : (
+                                                <ArrowDown className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            )
+                                        ) : (
+                                            <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                                        )}
+                                    </button>
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Role
+
+                                {/* Status Column with Sort */}
+                                <th className="px-6 py-3 text-left">
+                                    <button
+                                        onClick={() => handleSort("status")}
+                                        className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                    >
+                                        Status
+                                        {sortColumn === "status" ? (
+                                            sortOrder === "asc" ? (
+                                                <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            ) : (
+                                                <ArrowDown className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            )
+                                        ) : (
+                                            <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                                        )}
+                                    </button>
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    PIC
+
+                                {/* Role Column with Sort */}
+                                <th className="px-6 py-3 text-left">
+                                    <button
+                                        onClick={() => handleSort("role")}
+                                        className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                    >
+                                        Role
+                                        {sortColumn === "role" ? (
+                                            sortOrder === "asc" ? (
+                                                <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            ) : (
+                                                <ArrowDown className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            )
+                                        ) : (
+                                            <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                                        )}
+                                    </button>
                                 </th>
+
+                                {/* PIC Column with Sort */}
+                                <th className="px-6 py-3 text-left">
+                                    <button
+                                        onClick={() => handleSort("pic")}
+                                        className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                    >
+                                        PIC
+                                        {sortColumn === "pic" ? (
+                                            sortOrder === "asc" ? (
+                                                <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            ) : (
+                                                <ArrowDown className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
+                                            )
+                                        ) : (
+                                            <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                                        )}
+                                    </button>
+                                </th>
+
+                                {/* Actions Column */}
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
                                 </th>
@@ -143,7 +293,7 @@ export default function UsersPage() {
                             {isLoading ? (
                                 // Loading State
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center">
+                                    <td colSpan={6} className="px-6 py-12 text-center">
                                         <div className="flex flex-col items-center justify-center gap-3">
                                             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -155,7 +305,7 @@ export default function UsersPage() {
                             ) : users.length === 0 ? (
                                 // Empty State
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center">
+                                    <td colSpan={6} className="px-6 py-12 text-center">
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             No users found
                                         </p>
@@ -168,6 +318,16 @@ export default function UsersPage() {
                                         key={user.id}
                                         className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                     >
+                                        {/* Checkbox Column */}
+                                        <td className="px-6 py-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedUsers.has(user.id)}
+                                                onChange={() => handleSelectUser(user.id)}
+                                                className="w-4 h-4 rounded cursor-pointer"
+                                            />
+                                        </td>
+
                                         {/* Name Column with Avatar */}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
