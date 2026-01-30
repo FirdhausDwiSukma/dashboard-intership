@@ -208,7 +208,7 @@ export default function UsersPage() {
                                 </th>
 
                                 {/* Name Column with Sort */}
-                                <th className="px-6 py-3 text-left">
+                                <th className="px-2 py-3 text-left">
                                     <button
                                         onClick={() => handleSort("name")}
                                         className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -329,7 +329,7 @@ export default function UsersPage() {
                                         </td>
 
                                         {/* Name Column with Avatar */}
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-2 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <img
                                                     src={user.avatar || getAvatarUrl(user.name)}
