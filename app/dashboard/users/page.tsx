@@ -7,7 +7,7 @@ import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide
 import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
 
-type SortColumn = "name" | "status" | "role" | "pic" | null;
+type SortColumn = "full_name" | "status" | "role" | null;
 type SortOrder = "asc" | "desc";
 
 export default function UsersPage() {
@@ -51,10 +51,10 @@ export default function UsersPage() {
                     let bValue = "";
 
                     // Handle different column types
-                    if (sortColumn === "name") {
-                        aValue = a.name.toLowerCase();
-                        bValue = b.name.toLowerCase();
-                    } else {
+                    if (sortColumn === "full_name") {
+                        aValue = a.full_name.toLowerCase();
+                        bValue = b.full_name.toLowerCase();
+                    } else if (sortColumn === "status" || sortColumn === "role") {
                         aValue = a[sortColumn].toLowerCase();
                         bValue = b[sortColumn].toLowerCase();
                     }
@@ -210,11 +210,11 @@ export default function UsersPage() {
                                 {/* Name Column with Sort */}
                                 <th className="px-2 py-3 text-left">
                                     <button
-                                        onClick={() => handleSort("name")}
+                                        onClick={() => handleSort("full_name")}
                                         className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                                     >
                                         Name
-                                        {sortColumn === "name" ? (
+                                        {sortColumn === "full_name" ? (
                                             sortOrder === "asc" ? (
                                                 <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
                                             ) : (
@@ -264,23 +264,9 @@ export default function UsersPage() {
                                     </button>
                                 </th>
 
-                                {/* PIC Column with Sort */}
-                                <th className="px-6 py-3 text-left">
-                                    <button
-                                        onClick={() => handleSort("pic")}
-                                        className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                                    >
-                                        PIC
-                                        {sortColumn === "pic" ? (
-                                            sortOrder === "asc" ? (
-                                                <ArrowUp className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
-                                            ) : (
-                                                <ArrowDown className="w-4 h-4 text-primary-500" strokeWidth={2.5} />
-                                            )
-                                        ) : (
-                                            <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={2} />
-                                        )}
-                                    </button>
+                                {/* Email Column */}
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Email
                                 </th>
 
                                 {/* Actions Column */}
@@ -332,13 +318,13 @@ export default function UsersPage() {
                                         <td className="px-2 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.avatar || getAvatarUrl(user.name)}
-                                                    alt={user.name}
+                                                    src={user.avatar_url || getAvatarUrl(user.full_name)}
+                                                    alt={user.full_name}
                                                     className="w-10 h-10 rounded-full object-cover"
                                                 />
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {user.name}
+                                                        {user.full_name}
                                                     </div>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400">
                                                         {user.username}
@@ -350,18 +336,18 @@ export default function UsersPage() {
                                         {/* Status Column */}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${user.status === "Active"
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${user.status === "active"
                                                     ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
                                                     : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                                                     }`}
                                             >
                                                 <span
-                                                    className={`w-1.5 h-1.5 rounded-full ${user.status === "Active"
+                                                    className={`w-1.5 h-1.5 rounded-full ${user.status === "active"
                                                         ? "bg-green-600 dark:bg-green-400"
                                                         : "bg-gray-600 dark:bg-gray-400"
                                                         }`}
                                                 />
-                                                {user.status}
+                                                {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                                             </span>
                                         </td>
 
@@ -370,9 +356,9 @@ export default function UsersPage() {
                                             {user.role}
                                         </td>
 
-                                        {/* PIC Column */}
+                                        {/* Email Column */}
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            {user.pic}
+                                            {user.email}
                                         </td>
 
                                         {/* Actions Column */}
