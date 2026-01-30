@@ -113,7 +113,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
             {/* Sidebar Container */}
             <aside
                 className={cn(
-                    "fixed lg:static inset-y-0 left-0 z-50 bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out flex flex-col",
+                    "fixed inset-y-0 left-0 z-50 bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out flex flex-col",
                     // Mobile: controlled by isOpen (width 72). Desktop: controlled by isCollapsed (width 72 or 20)
                     isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0",
                     isCollapsed ? "lg:w-20" : "lg:w-72"
