@@ -22,6 +22,7 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import { authHelper } from "@/app/utils/authHelper";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -75,7 +76,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
+        authHelper.clearToken();
         localStorage.removeItem("username");
         router.push("/login");
     };

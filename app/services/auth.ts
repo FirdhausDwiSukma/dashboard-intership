@@ -4,6 +4,14 @@ import apiClient from '../lib/axios';
 interface LoginResponse {
     message: string;
     token: string;
+    user: {
+        id: number;
+        full_name: string;
+        username: string;
+        email: string;
+        role: string;
+        status: string;
+    };
 }
 
 // Define the shape of the error response from backend

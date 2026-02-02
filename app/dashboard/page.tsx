@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, FileText, AlertCircle } from "lucide-react";
 
+import { authHelper } from "@/app/utils/authHelper";
+
 export default function DashboardPage() {
     const router = useRouter();
     const [username, setUsername] = useState<string | null>(null);
 
     useEffect(() => {
         // Check for token
-        const token = localStorage.getItem("token");
-        if (!token) {
+        if (!authHelper.isAuthenticated()) {
             router.push("/login"); // Redirect if not logged in
             return;
         }

@@ -67,6 +67,11 @@ export const useLoginForm = () => {
             // Store token using authHelper
             authHelper.setToken(response.token);
 
+            // Store user info for dashboard display
+            if (response.user) {
+                localStorage.setItem("username", response.user.full_name);
+            }
+
             // Redirect to dashboard
             router.push("/dashboard");
         } catch (error: any) {

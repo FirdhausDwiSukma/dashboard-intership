@@ -4,14 +4,17 @@ import { useState, useEffect } from "react";
 import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
 import { AddUserModal } from "@/app/components/users/AddUserModal";
+import { EditUserModal } from "@/app/components/users/EditUserModal";
 import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
+import { useToast } from "@/app/context/ToastContext";
 
 type SortColumn = "full_name" | "status" | "role" | null;
 type SortOrder = "asc" | "desc";
 
 export default function UsersPage() {
+    const { addToast } = useToast();
     // State management
     const [users, setUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -30,6 +33,7 @@ export default function UsersPage() {
 
     // Modal state
     const [showAddUserModal, setShowAddUserModal] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Fetch users data when page, entries, or sort changes
     useEffect(() => {
@@ -169,7 +173,10 @@ export default function UsersPage() {
     };
 
     const handleEdit = (userId: number) => {
-        console.log("Edit user:", userId);
+        const userToEdit = users.find(u => u.id === userId);
+        if (userToEdit) {
+            setEditingUser(userToEdit);
+        }
     };
 
     const handleDelete = (userId: number) => {
@@ -424,6 +431,29 @@ export default function UsersPage() {
                     // Reload users after successful creation
                     loadUsers();
                     loadTotalCount();
+                    addToast({
+                        type: "success",
+                        title: "Successfully added user",
+                        message: "The new user has been created and can now access the system.",
+                        duration: 5000,
+                    });
+                }}
+            />
+
+            {/* Edit User Modal */}
+            <EditUserModal
+                isOpen={!!editingUser}
+                user={editingUser}
+                onClose={() => setEditingUser(null)}
+                onSuccess={() => {
+                    loadUsers();
+                    setEditingUser(null);
+                    addToast({
+                        type: "success",
+                        title: "Successfully updated user",
+                        message: "User details have been updated successfully.",
+                        duration: 5000,
+                    });
                 }}
             />
         </div>

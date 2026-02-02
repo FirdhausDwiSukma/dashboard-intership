@@ -140,25 +140,22 @@ export async function updateUser(
         email: string;
         status: "active" | "inactive";
     }
-): Promise<User | null> {
+): Promise<boolean> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${id}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
             body: JSON.stringify(userData),
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
-        return result.user;
+        return true;
     } catch (error) {
         console.error(`Error updating user ${id}:`, error);
-        return null;
+        throw error;
     }
 }
 
