@@ -173,6 +173,27 @@ export const useAddUserForm = ({ onSuccess, onError }: UseAddUserFormProps = {})
             }
         } catch (error: any) {
             const errorMessage = error.message || "Failed to create user. Please try again.";
+
+            // Handle duplicate entry errors
+            if (errorMessage.includes("duplicate key value violates unique constraint")) {
+                if (errorMessage.includes("email")) {
+                    setFormState((prev) => ({
+                        ...prev,
+                        isLoading: false,
+                        errors: { email: "Email is already in use" },
+                    }));
+                    return;
+                }
+                if (errorMessage.includes("username")) {
+                    setFormState((prev) => ({
+                        ...prev,
+                        isLoading: false,
+                        errors: { username: "Username is already taken" },
+                    }));
+                    return;
+                }
+            }
+
             setFormState((prev) => ({
                 ...prev,
                 errors: { general: errorMessage },
