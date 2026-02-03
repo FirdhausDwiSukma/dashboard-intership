@@ -70,6 +70,7 @@ export const useLoginForm = () => {
             // Store user info for dashboard display
             if (response.user) {
                 localStorage.setItem("username", response.user.full_name);
+                localStorage.setItem("role", response.user.role);
             }
 
             // Redirect to dashboard

@@ -64,14 +64,19 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     const pathname = usePathname();
     const router = useRouter();
     const [username, setUsername] = useState<string>("Admin");
+    const [role, setRole] = useState<string | null>(null);
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
     const [showProfileCard, setShowProfileCard] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("username");
+        const storedRole = localStorage.getItem("role");
         if (storedUser) {
             setUsername(storedUser);
+        }
+        if (storedRole) {
+            setRole(storedRole);
         }
     }, []);
 
@@ -177,7 +182,11 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                         </p>
                     )}
 
-                    {sidebarItems.map((item) => {
+                    {sidebarItems.filter(item => {
+                        // Hide Users menu if not Super Admin
+                        if (item.label === "Users" && role !== "super_admin") return false;
+                        return true;
+                    }).map((item) => {
                         const hasSubmenu = item.submenu && item.submenu.length > 0;
                         const isSubmenuOpen = openSubmenu === item.label;
                         const isParentActive = item.submenu?.some(sub => pathname === sub.href);

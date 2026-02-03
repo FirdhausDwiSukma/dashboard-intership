@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
 import { AddUserModal } from "@/app/components/users/AddUserModal";
@@ -14,7 +15,16 @@ type SortColumn = "full_name" | "status" | "role" | null;
 type SortOrder = "asc" | "desc";
 
 export default function UsersPage() {
+    const router = useRouter();
     const { addToast } = useToast();
+
+    // Check for role access
+    useEffect(() => {
+        const role = localStorage.getItem("role");
+        if (role !== "super_admin") {
+            router.push("/dashboard");
+        }
+    }, [router]);
     // State management
     const [users, setUsers] = useState<User[]>([]);
     const [currentPage, setCurrentPage] = useState(1);

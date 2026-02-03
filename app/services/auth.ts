@@ -44,6 +44,8 @@ export const authService = {
                 message = 'Akun tidak ditemukan.';
             } else if (errorData === 'INVALID_PASSWORD') {
                 message = 'Password salah.';
+            } else if (errorData === 'ACCOUNT_INACTIVE') {
+                message = 'Akun anda tidak aktif. Silahkan hubungi administrator.';
             } else if (errorData) {
                 message = errorData;
             }
