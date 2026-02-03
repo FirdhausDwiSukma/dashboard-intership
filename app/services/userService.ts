@@ -145,6 +145,27 @@ export async function createUser(
 }
 
 /**
+ * Delete a user
+ */
+export async function deleteUser(userId: number): Promise<boolean> {
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${userId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        throw error;
+    }
+}
+
+/**
  * Update an existing user
  */
 export async function updateUser(

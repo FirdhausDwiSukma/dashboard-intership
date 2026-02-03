@@ -6,8 +6,9 @@ import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
 import { AddUserModal } from "@/app/components/users/AddUserModal";
 import { EditUserModal } from "@/app/components/users/EditUserModal";
+import { DeleteUserModal } from "@/app/components/users/DeleteUserModal";
 import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Phone, MessageCircle } from "lucide-react";
-import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
+import { fetchUsers, getTotalUsersCount, deleteUser, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
 import { useToast } from "@/app/context/ToastContext";
 
@@ -35,15 +36,18 @@ export default function UsersPage() {
 
     // Selection state
     const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+
     const [selectAll, setSelectAll] = useState(false);
 
     // Sort state
     const [sortColumn, setSortColumn] = useState<SortColumn>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
-    // Modal state
-    const [showAddUserModal, setShowAddUserModal] = useState(false);
+    // Modal states
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
     // Fetch users data when page, entries, or sort changes
     useEffect(() => {
@@ -190,7 +194,37 @@ export default function UsersPage() {
     };
 
     const handleDelete = (userId: number) => {
-        console.log("Delete user:", userId);
+        const userToDelete = users.find(u => u.id === userId);
+        if (userToDelete) {
+            setDeletingUser(userToDelete);
+        }
+    };
+
+    const confirmDelete = async () => {
+        if (!deletingUser) return;
+
+        try {
+            setIsDeleteLoading(true);
+            await deleteUser(deletingUser.id);
+            addToast({
+                type: "success",
+                title: "User deleted",
+                message: "User deleted successfully",
+                duration: 3000
+            });
+            loadUsers(); // Refresh list
+            loadTotalCount(); // Refresh count
+            setDeletingUser(null);
+        } catch (error: any) {
+            addToast({
+                type: "error",
+                title: "Delete failed",
+                message: error.message || "Failed to delete user",
+                duration: 5000
+            });
+        } finally {
+            setIsDeleteLoading(false);
+        }
     };
 
     return (
@@ -206,7 +240,7 @@ export default function UsersPage() {
                     </span>
                 </div>
                 <button
-                    onClick={() => setShowAddUserModal(true)}
+                    onClick={() => setIsAddModalOpen(true)}
                     className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
                 >
                     Add User
@@ -461,8 +495,8 @@ export default function UsersPage() {
 
             {/* Add User Modal */}
             <AddUserModal
-                isOpen={showAddUserModal}
-                onClose={() => setShowAddUserModal(false)}
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
                 onSuccess={() => {
                     // Reload users after successful creation
                     loadUsers();
@@ -477,20 +511,31 @@ export default function UsersPage() {
             />
 
             {/* Edit User Modal */}
-            <EditUserModal
-                isOpen={!!editingUser}
-                user={editingUser}
-                onClose={() => setEditingUser(null)}
-                onSuccess={() => {
-                    loadUsers();
-                    setEditingUser(null);
-                    addToast({
-                        type: "success",
-                        title: "Successfully updated user",
-                        message: "User details have been updated successfully.",
-                        duration: 5000,
-                    });
-                }}
+            {editingUser && (
+                <EditUserModal
+                    isOpen={!!editingUser}
+                    onClose={() => setEditingUser(null)}
+                    onSuccess={() => {
+                        loadUsers();
+                        setEditingUser(null);
+                        addToast({
+                            type: "success",
+                            title: "Successfully updated user",
+                            message: "User details have been updated successfully.",
+                            duration: 5000,
+                        });
+                    }}
+                    user={editingUser}
+                />
+            )}
+
+            {/* Delete User Modal */}
+            <DeleteUserModal
+                isOpen={!!deletingUser}
+                onClose={() => setDeletingUser(null)}
+                onConfirm={confirmDelete}
+                userName={deletingUser?.full_name || ""}
+                isLoading={isDeleteLoading}
             />
         </div>
     );

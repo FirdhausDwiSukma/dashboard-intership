@@ -283,7 +283,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         type="text"
                                         value={contact.value}
                                         onChange={(e) => handlers.updateContact(index, "value", e.target.value)}
-                                        placeholder="Contact value..."
+                                        placeholder="Phone Number"
                                         className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-0"
                                     />
                                     <div className="flex items-center gap-1 shrink-0">
