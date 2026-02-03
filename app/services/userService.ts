@@ -14,7 +14,7 @@ export interface User {
     full_name: string;
     username: string;
     email: string;
-    role: string; // role.name from backend
+    role: string | { name: string }; // Handle both flat string and nested object
     status: "active" | "inactive";
     avatar_url?: string;
     contacts?: UserContact[];
@@ -26,7 +26,6 @@ export interface UserContact {
     contact_type: "phone" | "whatsapp";
     contact_value: string;
     is_primary: boolean;
-    verified_at?: string;
     created_at: string;
     updated_at: string;
 }
@@ -161,6 +160,44 @@ export async function deleteUser(userId: number): Promise<boolean> {
         return true;
     } catch (error) {
         console.error("Error deleting user:", error);
+        throw error;
+    }
+}
+
+// Profile API
+export async function getProfile(): Promise<User> {
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/profile`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.data; // Backend returns { data: user }
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+    }
+}
+
+export async function updateProfile(data: { full_name: string; email: string }): Promise<User> {
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/profile`, {
+            method: "PUT",
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.data; // Assumes backend returns updated user in { data: user } or check handler
+    } catch (error) {
+        console.error("Error updating profile:", error);
         throw error;
     }
 }
