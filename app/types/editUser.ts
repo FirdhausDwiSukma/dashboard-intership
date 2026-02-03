@@ -9,6 +9,7 @@ export interface EditUserFormData {
     email: string;
     role: string; // Read-only
     status: "active" | "inactive";
+    contacts: { type: string; value: string; is_primary: boolean }[];
 }
 
 export interface EditUserFormState extends EditUserFormData {
@@ -20,4 +21,7 @@ export interface EditUserFormHandlers {
     handleChange: (field: keyof EditUserFormData, value: string) => void;
     handleSubmit: (e: React.FormEvent) => Promise<void>;
     resetForm: () => void;
+    addContact: () => void;
+    removeContact: (index: number) => void;
+    updateContact: (index: number, field: "type" | "value" | "is_primary", value: string | boolean) => void;
 }

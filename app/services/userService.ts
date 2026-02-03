@@ -17,6 +17,18 @@ export interface User {
     role: string; // role.name from backend
     status: "active" | "inactive";
     avatar_url?: string;
+    contacts?: UserContact[];
+}
+
+export interface UserContact {
+    id: number;
+    user_id: number;
+    contact_type: "phone" | "whatsapp";
+    contact_value: string;
+    is_primary: boolean;
+    verified_at?: string;
+    created_at: string;
+    updated_at: string;
 }
 
 // API Response interface
@@ -104,7 +116,8 @@ export async function createUser(
     username: string,
     email: string,
     password: string,
-    roleId: number
+    roleId: number,
+    contacts: { type: string; value: string; is_primary: boolean }[] = []
 ): Promise<boolean> {
     try {
         const response = await fetchWithAuth(`${API_BASE_URL}/api/users`, {
@@ -115,6 +128,7 @@ export async function createUser(
                 email,
                 password,
                 role_id: roleId,
+                contacts,
             }),
         });
 
@@ -139,6 +153,7 @@ export async function updateUser(
         full_name: string;
         email: string;
         status: "active" | "inactive";
+        contacts: { type: string; value: string; is_primary: boolean }[];
     }
 ): Promise<boolean> {
     try {

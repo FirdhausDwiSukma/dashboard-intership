@@ -7,7 +7,9 @@ export interface AddUserFormData {
     username: string;
     email: string;
     password: string;
+    confirmPassword: string;
     roleId: number;
+    contacts: { type: string; value: string; is_primary: boolean }[];
 }
 
 export interface AddUserFormState extends AddUserFormData {
@@ -19,6 +21,9 @@ export interface AddUserFormHandlers {
     handleChange: (field: keyof AddUserFormData, value: string | number) => void;
     handleSubmit: (e: React.FormEvent) => Promise<void>;
     resetForm: () => void;
+    addContact: () => void;
+    removeContact: (index: number) => void;
+    updateContact: (index: number, field: "type" | "value" | "is_primary", value: string | boolean) => void;
 }
 
 export interface Role {

@@ -6,7 +6,7 @@ import { Pagination } from "@/app/components/dashboard/Pagination";
 import { TableControls } from "@/app/components/dashboard/TableControls";
 import { AddUserModal } from "@/app/components/users/AddUserModal";
 import { EditUserModal } from "@/app/components/users/EditUserModal";
-import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Phone, MessageCircle } from "lucide-react";
 import { fetchUsers, getTotalUsersCount, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
 import { useToast } from "@/app/context/ToastContext";
@@ -303,6 +303,11 @@ export default function UsersPage() {
                                     Email
                                 </th>
 
+                                {/* Contact Column */}
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Contact
+                                </th>
+
                                 {/* Actions Column */}
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     Actions
@@ -393,6 +398,27 @@ export default function UsersPage() {
                                         {/* Email Column */}
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                                             {user.email}
+                                        </td>
+
+                                        {/* Contact Column */}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                            {user.contacts && user.contacts.length > 0 ? (
+                                                (() => {
+                                                    const primary = user.contacts.find(c => c.is_primary) || user.contacts[0];
+                                                    return (
+                                                        <div className="flex items-center gap-2">
+                                                            {primary.contact_type === 'whatsapp' ? (
+                                                                <MessageCircle className="w-4 h-4 text-green-500" />
+                                                            ) : (
+                                                                <Phone className="w-4 h-4 text-gray-400" />
+                                                            )}
+                                                            <span>{primary.contact_value}</span>
+                                                        </div>
+                                                    );
+                                                })()
+                                            ) : (
+                                                <span className="text-gray-400">-</span>
+                                            )}
                                         </td>
 
                                         {/* Actions Column */}

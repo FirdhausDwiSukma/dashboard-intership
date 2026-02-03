@@ -18,7 +18,9 @@ const INITIAL_FORM_STATE: AddUserFormData = {
     username: "",
     email: "",
     password: "",
-    roleId: 0, // No default selection - user must choose
+    confirmPassword: "",
+    roleId: 0,
+    contacts: [{ type: "phone", value: "", is_primary: true }],
 };
 
 interface UseAddUserFormProps {
@@ -86,9 +88,35 @@ export const useAddUserForm = ({ onSuccess, onError }: UseAddUserFormProps = {})
             }
         }
 
+        // Confirm Password validation
+        if (formState.password !== formState.confirmPassword) {
+            errors.confirmPassword = "Passwords do not match";
+        }
+
         // Role validation
         if (!formState.roleId) {
             errors.roleId = "Please select a role";
+        }
+
+        // Contact validation
+        if (formState.contacts && formState.contacts.length > 0) {
+            for (let i = 0; i < formState.contacts.length; i++) {
+                const contact = formState.contacts[i];
+                if (!contact.value.trim()) {
+                    errors.general = `Contact #${i + 1} is required`;
+                    break;
+                }
+                const len = contact.value.trim().length;
+                if (len < 10 || len > 13) {
+                    errors.general = `Contact #${i + 1} number must be between 10 and 13 characters`;
+                    break;
+                }
+                // Optional: Check for numeric only
+                if (!/^\d+$/.test(contact.value.trim())) {
+                    errors.general = `Contact #${i + 1} must contain only numbers`;
+                    break;
+                }
+            }
         }
 
         return errors;
@@ -131,7 +159,8 @@ export const useAddUserForm = ({ onSuccess, onError }: UseAddUserFormProps = {})
                 formState.username,
                 formState.email,
                 formState.password,
-                formState.roleId
+                formState.roleId,
+                formState.contacts
             );
 
             if (success) {
@@ -165,10 +194,42 @@ export const useAddUserForm = ({ onSuccess, onError }: UseAddUserFormProps = {})
         });
     };
 
+    /**
+     * Contact Handlers
+     */
+    const addContact = () => {
+        setFormState(prev => ({
+            ...prev,
+            contacts: [...prev.contacts, { type: "phone", value: "", is_primary: false }]
+        }));
+    };
+
+    const removeContact = (index: number) => {
+        setFormState(prev => ({
+            ...prev,
+            contacts: prev.contacts.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateContact = (index: number, field: "type" | "value" | "is_primary", value: string | boolean) => {
+        setFormState(prev => {
+            const newContacts = [...prev.contacts];
+            if (field === "is_primary" && value === true) {
+                // Ensure only one primary
+                newContacts.forEach(c => c.is_primary = false);
+            }
+            newContacts[index] = { ...newContacts[index], [field]: value };
+            return { ...prev, contacts: newContacts };
+        });
+    };
+
     const handlers: AddUserFormHandlers = {
         handleChange,
         handleSubmit,
         resetForm,
+        addContact,
+        removeContact,
+        updateContact,
     };
 
     return {
