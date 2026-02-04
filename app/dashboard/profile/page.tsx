@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import { User, getProfile, updateProfile } from "@/app/services/userService";
 import { useToast } from "@/app/context/ToastContext";
-import { Loader2, Mail, Phone, MessageCircle, Shield, User as UserIcon, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Mail, Phone, MessageCircle, Shield, User as UserIcon, CheckCircle, XCircle, Lock } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import ChangePasswordModal from "@/app/components/profile/ChangePasswordModal";
 
 export default function ProfilePage() {
     const { addToast } = useToast();
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -261,33 +263,49 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-gray-800">
                                 <button
                                     type="button"
-                                    onClick={loadProfile}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                                    onClick={() => setIsPasswordModalOpen(true)}
+                                    className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg transition-colors flex items-center gap-2"
                                 >
-                                    Reset
+                                    <Lock className="w-4 h-4" />
+                                    Change Password
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSaving}
-                                    className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium flex items-center gap-2"
-                                >
-                                    {isSaving ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Saving...
-                                        </>
-                                    ) : (
-                                        "Save Changes"
-                                    )}
-                                </button>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={loadProfile}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                                    >
+                                        Reset Form
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={isSaving}
+                                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium flex items-center gap-2"
+                                    >
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            "Save Changes"
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
+
+            <ChangePasswordModal
+                isOpen={isPasswordModalOpen}
+                onClose={() => setIsPasswordModalOpen(false)}
+            />
         </div>
     );
 }

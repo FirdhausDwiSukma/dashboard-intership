@@ -7,7 +7,8 @@ import { TableControls } from "@/app/components/dashboard/TableControls";
 import { AddUserModal } from "@/app/components/users/AddUserModal";
 import { EditUserModal } from "@/app/components/users/EditUserModal";
 import { DeleteUserModal } from "@/app/components/users/DeleteUserModal";
-import { Pencil, Trash2, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Phone, MessageCircle } from "lucide-react";
+import ResetPasswordModal from "@/app/components/users/ResetPasswordModal"; // Default Import
+import { Pencil, Trash2, Loader2, Key, ArrowUpDown, ArrowUp, ArrowDown, Phone, MessageCircle } from "lucide-react";
 import { fetchUsers, getTotalUsersCount, deleteUser, type User } from "@/app/services/userService";
 import { cn } from "@/app/lib/utils";
 import { useToast } from "@/app/context/ToastContext";
@@ -47,6 +48,7 @@ export default function UsersPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [resetPasswordUser, setResetPasswordUser] = useState<{ id: number; name: string } | null>(null); // New State
     const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
     // Fetch users data when page, entries, or sort changes
@@ -76,9 +78,14 @@ export default function UsersPage() {
                     if (sortColumn === "full_name") {
                         aValue = a.full_name.toLowerCase();
                         bValue = b.full_name.toLowerCase();
-                    } else if (sortColumn === "status" || sortColumn === "role") {
-                        aValue = a[sortColumn].toLowerCase();
-                        bValue = b[sortColumn].toLowerCase();
+                    } else if (sortColumn === "status") {
+                        aValue = a.status.toLowerCase();
+                        bValue = b.status.toLowerCase();
+                    } else if (sortColumn === "role") {
+                        const aRole = typeof a.role === 'string' ? a.role : a.role?.name || "";
+                        const bRole = typeof b.role === 'string' ? b.role : b.role?.name || "";
+                        aValue = aRole.toLowerCase();
+                        bValue = bRole.toLowerCase();
                     }
 
                     if (sortOrder === "asc") {
@@ -426,7 +433,7 @@ export default function UsersPage() {
 
                                         {/* Role Column */}
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            {user.role}
+                                            {typeof user.role === 'string' ? user.role : user.role.name}
                                         </td>
 
                                         {/* Email Column */}
@@ -464,6 +471,13 @@ export default function UsersPage() {
                                                     title="Edit"
                                                 >
                                                     <Pencil className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setResetPasswordUser({ id: user.id, name: user.full_name })}
+                                                    className="p-1.5 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                    title="Reset Password"
+                                                >
+                                                    <Key className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(user.id)}
@@ -536,6 +550,14 @@ export default function UsersPage() {
                 onConfirm={confirmDelete}
                 userName={deletingUser?.full_name || ""}
                 isLoading={isDeleteLoading}
+            />
+
+            {/* Reset Password Modal */}
+            <ResetPasswordModal
+                isOpen={!!resetPasswordUser}
+                onClose={() => setResetPasswordUser(null)}
+                userId={resetPasswordUser?.id || null}
+                userName={resetPasswordUser?.name || ""}
             />
         </div>
     );
