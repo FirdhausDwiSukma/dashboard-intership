@@ -199,6 +199,30 @@ export async function changeMyPassword(data: { current_password: string; new_pas
     }
 }
 
+export async function uploadAvatar(file: File): Promise<{ avatar_url: string }> {
+    try {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/profile/avatar`, {
+            method: "POST", // POST for multipart upload
+            // Content-Type is set automatically by browser with boundary for FormData
+            // We need to override the default JSON content-type if fetchWithAuth sets it
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error uploading avatar:", error);
+        throw error;
+    }
+}
+
 export async function resetUserPassword(userId: number, newPassword: string): Promise<void> {
     try {
         const response = await fetchWithAuth(`${API_BASE_URL}/api/users/${userId}/password`, {

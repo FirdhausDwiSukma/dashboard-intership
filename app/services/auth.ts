@@ -9,8 +9,9 @@ interface LoginResponse {
         full_name: string;
         username: string;
         email: string;
-        role: string;
+        role: string | { name: string };
         status: string;
+        avatar_url?: string;
     };
 }
 

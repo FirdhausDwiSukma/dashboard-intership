@@ -64,25 +64,54 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     const pathname = usePathname();
     const router = useRouter();
     const [username, setUsername] = useState<string>("Admin");
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null); // New state
+    const [email, setEmail] = useState<string>("admin@dashtern.com"); // New state
     const [role, setRole] = useState<string | null>(null);
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
     const [showProfileCard, setShowProfileCard] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    // Function to load profile data
+    const loadProfileData = () => {
+        // Try to get from localStorage first for immediate display
         const storedUser = localStorage.getItem("username");
         const storedRole = localStorage.getItem("role");
-        if (storedUser) {
-            setUsername(storedUser);
-        }
-        if (storedRole) {
-            setRole(storedRole);
-        }
+        const storedAvatar = localStorage.getItem("avatar_url");
+        const storedEmail = localStorage.getItem("email");
+
+        if (storedUser) setUsername(storedUser);
+        if (storedRole) setRole(storedRole);
+        if (storedAvatar) setAvatarUrl(storedAvatar);
+        if (storedEmail) setEmail(storedEmail);
+    };
+
+    useEffect(() => {
+        loadProfileData();
+
+        // Listen for profile update events
+        const handleProfileUpdate = (event: CustomEvent) => {
+            // Reload data from storage or payload
+            if (event.detail) {
+                if (event.detail.full_name) setUsername(event.detail.full_name);
+                if (event.detail.avatar_url) setAvatarUrl(event.detail.avatar_url);
+                if (event.detail.email) setEmail(event.detail.email);
+            } else {
+                loadProfileData();
+            }
+        };
+
+        window.addEventListener('user-profile-updated', handleProfileUpdate as EventListener);
+        return () => {
+            window.removeEventListener('user-profile-updated', handleProfileUpdate as EventListener);
+        };
     }, []);
 
     const handleLogout = () => {
         authHelper.clearToken();
         localStorage.removeItem("username");
+        localStorage.removeItem("role");
+        localStorage.removeItem("avatar_url");
+        localStorage.removeItem("email");
         router.push("/login");
     };
 
@@ -346,9 +375,22 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                         )}
                         title={isCollapsed ? username : undefined}
                     >
-                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative shrink-0">
-                            {/* Placeholder Avatar */}
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative shrink-0 ring-2 ring-white dark:ring-gray-800 shadow-sm">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl.startsWith('http') ? avatarUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${avatarUrl}`}
+                                    alt={username}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.parentElement?.querySelector('.footer-btn-avatar-fallback')?.classList.remove('hidden');
+                                    }}
+                                />
+                            ) : null}
+                            <div className={cn(
+                                "footer-btn-avatar-fallback absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 font-medium bg-gray-200 dark:bg-gray-700",
+                                avatarUrl ? "hidden" : ""
+                            )}>
                                 {username.charAt(0).toUpperCase()}
                             </div>
                         </div>
@@ -359,7 +401,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                         {username}
                                     </p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                        admin@dashtern.com
+                                        {email}
                                     </p>
                                 </div>
                                 <ChevronUp
@@ -382,8 +424,22 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                         >
                             {/* Profile Photo & Info */}
                             <div className="flex flex-col items-center text-center mb-4">
-                                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative mb-3">
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold text-2xl">
+                                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative mb-3 ring-2 ring-white dark:ring-gray-800 shadow-md">
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl.startsWith('http') ? avatarUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${avatarUrl}`}
+                                            alt={username}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.parentElement?.querySelector('.avatar-fallback')?.classList.remove('hidden');
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div className={cn(
+                                        "avatar-fallback absolute inset-0 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold text-2xl bg-gray-200 dark:bg-gray-700",
+                                        avatarUrl ? "hidden" : ""
+                                    )}>
                                         {username.charAt(0).toUpperCase()}
                                     </div>
                                 </div>
@@ -391,7 +447,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                     {username}
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    admin@dashtern.com
+                                    {email}
                                 </p>
                             </div>
 

@@ -398,9 +398,16 @@ export default function UsersPage() {
                                         <td className="px-2 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.avatar_url || getAvatarUrl(user.full_name)}
+                                                    src={
+                                                        user.avatar_url
+                                                            ? (user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${user.avatar_url}`)
+                                                            : getAvatarUrl(user.full_name)
+                                                    }
                                                     alt={user.full_name}
                                                     className="w-10 h-10 rounded-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = getAvatarUrl(user.full_name);
+                                                    }}
                                                 />
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
