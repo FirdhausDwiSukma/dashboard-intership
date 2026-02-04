@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { User, getProfile, updateProfile } from "@/app/services/userService";
 import { useToast } from "@/app/context/ToastContext";
-import { Loader2, Mail, Phone, MessageCircle, Shield, User as UserIcon, CheckCircle, XCircle, Lock } from "lucide-react";
+import { Loader2, Mail, Phone, MessageCircle, Shield, User as UserIcon, CheckCircle, XCircle, Lock, Pencil } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import ChangePasswordModal from "@/app/components/profile/ChangePasswordModal";
 
@@ -12,6 +12,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditing, setIsEditing] = useState(false); // New State
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     // Form state
@@ -45,6 +46,22 @@ export default function ProfilePage() {
         }
     };
 
+    const handleEditToggle = () => {
+        if (isEditing) {
+            // Cancel edit: reset form to current user data
+            if (user) {
+                setFormData({
+                    full_name: user.full_name,
+                    email: user.email,
+                });
+            }
+            setIsEditing(false);
+        } else {
+            // Start edit
+            setIsEditing(true);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -53,6 +70,7 @@ export default function ProfilePage() {
             setIsSaving(true);
             const updatedUser = await updateProfile(formData);
             setUser(updatedUser);
+            setIsEditing(false); // Exit edit mode
             addToast({
                 type: "success",
                 title: "Success",
@@ -236,7 +254,13 @@ export default function ProfilePage() {
                                             value={formData.full_name}
                                             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                             required
-                                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all sm:text-sm"
+                                            disabled={!isEditing}
+                                            className={cn(
+                                                "w-full pl-10 pr-3 py-2 border rounded-lg transition-all sm:text-sm",
+                                                isEditing
+                                                    ? "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                            )}
                                             placeholder="Enter your full name"
                                         />
                                     </div>
@@ -256,7 +280,13 @@ export default function ProfilePage() {
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                             required
-                                            className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all sm:text-sm"
+                                            disabled={!isEditing}
+                                            className={cn(
+                                                "w-full pl-10 pr-3 py-2 border rounded-lg transition-all sm:text-sm",
+                                                isEditing
+                                                    ? "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                    : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                            )}
                                             placeholder="name@example.com"
                                         />
                                     </div>
@@ -274,27 +304,40 @@ export default function ProfilePage() {
                                 </button>
 
                                 <div className="flex items-center gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={loadProfile}
-                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
-                                    >
-                                        Reset Form
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSaving}
-                                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium flex items-center gap-2"
-                                    >
-                                        {isSaving ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            "Save Changes"
-                                        )}
-                                    </button>
+                                    {!isEditing ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleEditToggle}
+                                            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 transition-colors text-sm font-medium flex items-center gap-2"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                            Edit Profile
+                                        </button>
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={handleEditToggle}
+                                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isSaving}
+                                                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm font-medium flex items-center gap-2"
+                                            >
+                                                {isSaving ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Saving...
+                                                    </>
+                                                ) : (
+                                                    "Save Changes"
+                                                )}
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </form>
