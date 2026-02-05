@@ -54,7 +54,10 @@ export async function fetchUsers(page: number = 1, limit: number = 10): Promise<
         }
 
         const data: UsersResponse = await response.json();
-        return data;
+        return {
+            ...data,
+            data: data.data || [] // Handle null data from backend
+        };
     } catch (error) {
         console.error("Error fetching users:", error);
         // Return empty data on error

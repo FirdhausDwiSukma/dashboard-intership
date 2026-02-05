@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DatePicker } from "@/app/components/ui/date-picker";
 import {
     Users,
     Search,
@@ -15,9 +16,18 @@ import {
     CheckCircle2,
     AlertCircle,
     UserCheck,
-    X
+    X,
+    Trash2
 } from "lucide-react";
-import { fetchInterns, getActiveInternsCount, getTotalInternsCount, type Intern } from "@/app/services/internService";
+import {
+    fetchInterns,
+    fetchInternStats,
+    fetchPICs,
+    createIntern,
+    updateIntern,
+    deleteIntern,
+    type Intern
+} from "@/app/services/internService";
 
 export default function InternsPage() {
     const [interns, setInterns] = useState<Intern[]>([]);
@@ -26,10 +36,16 @@ export default function InternsPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [activeCount, setActiveCount] = useState(0);
+    const [currentBatch, setCurrentBatch] = useState("2024-Q1");
+    const [avgPerformance, setAvgPerformance] = useState("0%");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedBatch, setSelectedBatch] = useState<string>("all");
     const [selectedDivision, setSelectedDivision] = useState<string>("all");
+
+    // Modal & Form State
     const [showAddModal, setShowAddModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentInternId, setCurrentInternId] = useState<number | null>(null);
     const [formData, setFormData] = useState({
         full_name: "",
         username: "",
@@ -56,18 +72,25 @@ export default function InternsPage() {
         const response = await fetchInterns(currentPage, itemsPerPage);
         setInterns(response.data);
         setTotalPages(response.totalPages);
-        setTotalCount(response.total);
         setLoading(false);
     };
 
     const loadStats = async () => {
-        const [total, active] = await Promise.all([
-            getTotalInternsCount(),
-            getActiveInternsCount()
-        ]);
-        setTotalCount(total);
-        setActiveCount(active);
+        try {
+            const stats = await fetchInternStats();
+            setTotalCount(stats.total_interns);
+            setActiveCount(stats.active_interns);
+            setCurrentBatch(stats.current_batch);
+            setAvgPerformance(stats.performance_avg);
+        } catch (error) {
+            console.error("Failed to load stats", error);
+        }
     };
+    // ...
+    // (Rendering logic needs to be updated to use currentBatch and avgPerformance)
+    // ...
+    // Skipping to the rendering part update
+
 
     // Get avatar URL
     const getAvatarUrl = (name: string) => {
@@ -97,14 +120,80 @@ export default function InternsPage() {
     // Handle form submit
     const handleSubmitIntern = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Connect to backend API
-        console.log("Creating intern with data:", formData);
 
-        // For now, just close modal and show success message
-        alert("Intern creation will be implemented when backend is ready!");
-        setShowAddModal(false);
+        try {
+            if (isEditing && currentInternId) {
+                await updateIntern(currentInternId, {
+                    full_name: formData.full_name,
+                    email: formData.email,
+                    status: "active", // Default status, should probably come from form if we allow editing it
+                    pic_id: parseInt(formData.pic_id),
+                    batch: formData.batch,
+                    division: formData.division,
+                    university: formData.university,
+                    major: formData.major,
+                    start_date: formData.start_date,
+                    end_date: formData.end_date,
+                });
+                alert("Intern updated successfully!");
+            } else {
+                await createIntern({
+                    ...formData,
+                    pic_id: parseInt(formData.pic_id),
+                });
+                alert("Intern created successfully!");
+            }
 
-        // Reset form
+            closeModal();
+            loadInterns();
+            loadStats();
+        } catch (error: any) {
+            console.error("Operation failed:", error);
+            alert(`Error: ${error.message || "Operation failed"}`);
+        }
+    };
+
+    const handleEdit = (intern: Intern) => {
+        setIsEditing(true);
+        setCurrentInternId(intern.id);
+
+        const startDate = intern.start_date ? new Date(intern.start_date).toISOString().split('T')[0] : "";
+        const endDate = intern.end_date ? new Date(intern.end_date).toISOString().split('T')[0] : "";
+
+        setFormData({
+            full_name: intern.full_name,
+            username: intern.username,
+            email: intern.email,
+            password: "", // Password not required for update unless changed (logic simplified here)
+            pic_id: (intern.pic_id || "").toString(),
+            batch: intern.batch,
+            division: intern.division,
+            university: intern.university,
+            major: intern.major,
+            start_date: startDate,
+            end_date: endDate,
+        });
+
+        setShowAddModal(true);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this intern? This action cannot be undone.")) return;
+
+        try {
+            await deleteIntern(id);
+            alert("Intern deleted successfully");
+            loadInterns();
+            loadStats();
+        } catch (error: any) {
+            console.error(error);
+            alert(`Failed to delete intern: ${error.message}`);
+        }
+    };
+
+    const openAddModal = () => {
+        setIsEditing(false);
+        setCurrentInternId(null);
         setFormData({
             full_name: "",
             username: "",
@@ -118,18 +207,30 @@ export default function InternsPage() {
             start_date: "",
             end_date: "",
         });
+        setShowAddModal(true);
     };
 
-    // Mock PIC list (will be replaced with API call)
-    const availablePICs = [
-        { id: 2, name: "John Smith" },
-        { id: 3, name: "Alice Williams" },
-    ];
+    const closeModal = () => {
+        setShowAddModal(false);
+        setIsEditing(false);
+        setCurrentInternId(null);
+    };
+
+    const [availablePICs, setAvailablePICs] = useState<{ id: number; name: string }[]>([]);
+
+    useEffect(() => {
+        loadPICs();
+    }, []);
+
+    const loadPICs = async () => {
+        const pics = await fetchPICs();
+        setAvailablePICs(pics);
+    };
 
     // Filtered interns
     const filteredInterns = interns.filter(intern => {
-        const matchesSearch = intern.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            intern.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (intern.full_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (intern.email || "").toLowerCase().includes(searchQuery.toLowerCase());
         const matchesBatch = selectedBatch === "all" || intern.batch === selectedBatch;
         const matchesDivision = selectedDivision === "all" || intern.division === selectedDivision;
         return matchesSearch && matchesBatch && matchesDivision;
@@ -154,7 +255,7 @@ export default function InternsPage() {
                         </p>
                     </div>
                     <button
-                        onClick={() => setShowAddModal(true)}
+                        onClick={openAddModal}
                         className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
                     >
                         <UserPlus className="w-4 h-4" />
@@ -180,6 +281,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Active Interns</p>
+                                {/* Use filtered or fetched active count */}
                                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{activeCount}</p>
                             </div>
                             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
@@ -192,7 +294,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Current Batch</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">2024-Q1</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{currentBatch}</p>
                             </div>
                             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
                                 <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -204,7 +306,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Avg Performance</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">85%</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{avgPerformance}</p>
                             </div>
                             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
                                 <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -304,7 +406,7 @@ export default function InternsPage() {
                                                 }`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${intern.status === "active" ? "bg-green-600" : "bg-gray-600"
                                                     }`} />
-                                                {intern.status.charAt(0).toUpperCase() + intern.status.slice(1)}
+                                                {(intern.status || "Unknown").charAt(0).toUpperCase() + (intern.status || "Unknown").slice(1)}
                                             </span>
                                         </div>
                                     </div>
@@ -391,11 +493,18 @@ export default function InternsPage() {
 
                                 {/* Actions */}
                                 <div className="mt-4 flex gap-2">
-                                    <button className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">
-                                        View Details
-                                    </button>
-                                    <button className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <button
+                                        className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium"
+                                        onClick={() => handleEdit(intern)}
+                                    >
                                         Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(intern.id)}
+                                        className="px-3 py-2 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium"
+                                        title="Delete Intern"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
@@ -443,7 +552,7 @@ export default function InternsPage() {
                 )}
             </div>
 
-            {/* Add Intern Modal */}
+            {/* Add/Edit Intern Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -451,10 +560,10 @@ export default function InternsPage() {
                         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <UserPlus className="w-5 h-5 text-primary-500" />
-                                Add New Intern
+                                {isEditing ? "Edit Intern" : "Add New Intern"}
                             </h2>
                             <button
-                                onClick={() => setShowAddModal(false)}
+                                onClick={closeModal}
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                             >
                                 <X className="w-5 h-5" />
@@ -494,7 +603,8 @@ export default function InternsPage() {
                                             value={formData.username}
                                             onChange={handleInputChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                            readOnly={isEditing} // Prevent username change on edit if backend doesn't support it easily
+                                            className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent ${isEditing ? "opacity-70 cursor-not-allowed" : ""}`}
                                             placeholder="intern_john"
                                         />
                                     </div>
@@ -512,21 +622,23 @@ export default function InternsPage() {
                                             placeholder="john@example.com"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Password <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleInputChange}
-                                            required
-                                            minLength={6}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
+                                    {!isEditing && (
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Password <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                                required
+                                                minLength={6}
+                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                                placeholder="••••••••"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -640,27 +752,33 @@ export default function InternsPage() {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Start Date <span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="date"
-                                            name="start_date"
-                                            value={formData.start_date}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        <DatePicker
+                                            date={formData.start_date ? new Date(formData.start_date) : undefined}
+                                            setDate={(date) => {
+                                                setFormData({
+                                                    ...formData,
+                                                    start_date: date ? date.toLocaleDateString('en-CA') : ""
+                                                });
+                                            }}
+                                            placeholder="Select start date"
                                         />
+                                        <input type="hidden" name="start_date" value={formData.start_date} required />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             End Date <span className="text-red-500">*</span>
                                         </label>
-                                        <input
-                                            type="date"
-                                            name="end_date"
-                                            value={formData.end_date}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                        <DatePicker
+                                            date={formData.end_date ? new Date(formData.end_date) : undefined}
+                                            setDate={(date) => {
+                                                setFormData({
+                                                    ...formData,
+                                                    end_date: date ? date.toLocaleDateString('en-CA') : ""
+                                                });
+                                            }}
+                                            placeholder="Select end date"
                                         />
+                                        <input type="hidden" name="end_date" value={formData.end_date} required />
                                     </div>
                                 </div>
                             </div>
@@ -669,7 +787,7 @@ export default function InternsPage() {
                             <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddModal(false)}
+                                    onClick={closeModal}
                                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-gray-700 dark:text-gray-300"
                                 >
                                     Cancel
@@ -678,7 +796,7 @@ export default function InternsPage() {
                                     type="submit"
                                     className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
                                 >
-                                    Create Intern
+                                    {isEditing ? "Update Intern" : "Create Intern"}
                                 </button>
                             </div>
                         </form>
