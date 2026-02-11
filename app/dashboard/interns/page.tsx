@@ -32,6 +32,7 @@ import {
 export default function InternsPage() {
     const [interns, setInterns] = useState<Intern[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userRole, setUserRole] = useState<string>("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -71,6 +72,9 @@ export default function InternsPage() {
     useEffect(() => {
         loadStats();
         loadPICs();
+        // Get user role from localStorage
+        const role = localStorage.getItem("role") || "";
+        setUserRole(role);
     }, []);
 
     const loadInterns = async () => {
@@ -91,6 +95,9 @@ export default function InternsPage() {
         const pics = await fetchPICs();
         setAvailablePICs(pics);
     };
+
+    // Check if current user can add interns (only HR and Super Admin)
+    const canAddIntern = userRole === "super_admin" || userRole === "hr";
 
     // Get avatar URL
     const getAvatarUrl = (name: string) => {
@@ -214,13 +221,15 @@ export default function InternsPage() {
                             Manage and monitor intern performance
                         </p>
                     </div>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
-                    >
-                        <UserPlus className="w-4 h-4" />
-                        Add Intern
-                    </button>
+                    {canAddIntern && (
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
+                        >
+                            <UserPlus className="w-4 h-4" />
+                            Add Intern
+                        </button>
+                    )}
                 </div>
 
                 {/* Stats Cards */}
