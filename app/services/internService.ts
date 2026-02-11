@@ -1,200 +1,222 @@
 /**
- * Mock API Service for Interns
- * This will be replaced with real API calls later
+ * API Service for Interns
+ * Connects to the backend API for intern management
  */
 
-// Intern interface
-export interface Intern {
+import { fetchWithAuth } from "@/app/utils/authHelper";
+
+// Base API URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+// Backend User object (nested in InternProfile response)
+export interface InternUser {
     id: number;
-    user_id: number;
     full_name: string;
     username: string;
     email: string;
-    avatar_url?: string;
+    role_id: number;
+    role: { id: number; name: string };
+    status: "active" | "inactive";
+    avatar_url?: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+// Intern interface matching backend InternProfile response
+export interface Intern {
+    id: number;
+    user_id: number;
+    user: InternUser;
     pic_id: number;
-    pic_name: string;
+    pic: InternUser;
     batch: string;
     division: string;
     university: string;
     major: string;
     start_date: string;
     end_date: string;
-    status: "active" | "inactive";
-    // Performance metrics (will come from backend calculations)
-    task_completion_rate?: number;
-    attendance_rate?: number;
-    performance_level?: "low" | "medium" | "high";
-    potential_level?: "low" | "medium" | "high";
+    created_at: string;
 }
 
-// API Response interface
+// API Response interface for paginated list
 export interface InternsResponse {
     data: Intern[];
     total: number;
     page: number;
-    totalPages: number;
+    limit: number;
+    total_pages: number;
 }
 
-// Mock database
-const MOCK_INTERNS_DB: Intern[] = [
-    {
-        id: 1,
-        user_id: 4,
-        full_name: "Bob Johnson",
-        username: "intern_bob",
-        email: "bob@example.com",
-        pic_id: 2,
-        pic_name: "John Smith",
-        batch: "2024-Q1",
-        division: "Engineering",
-        university: "Universitas Indonesia",
-        major: "Computer Science",
-        start_date: "2024-01-15",
-        end_date: "2024-07-15",
-        status: "active",
-        task_completion_rate: 85,
-        attendance_rate: 92,
-        performance_level: "high",
-        potential_level: "high",
-    },
-    {
-        id: 2,
-        user_id: 5,
-        full_name: "Charlie Brown",
-        username: "intern_charlie",
-        email: "charlie@example.com",
-        pic_id: 2,
-        pic_name: "John Smith",
-        batch: "2024-Q1",
-        division: "Marketing",
-        university: "Institut Teknologi Bandung",
-        major: "Business Administration",
-        start_date: "2024-01-15",
-        end_date: "2024-07-15",
-        status: "active",
-        task_completion_rate: 78,
-        attendance_rate: 88,
-        performance_level: "medium",
-        potential_level: "high",
-    },
-    {
-        id: 3,
-        user_id: 6,
-        full_name: "Diana Prince",
-        username: "intern_diana",
-        email: "diana@example.com",
-        pic_id: 3,
-        pic_name: "Alice Williams",
-        batch: "2024-Q1",
-        division: "Design",
-        university: "Universitas Gadjah Mada",
-        major: "Visual Communication Design",
-        start_date: "2024-01-15",
-        end_date: "2024-07-15",
-        status: "active",
-        task_completion_rate: 92,
-        attendance_rate: 95,
-        performance_level: "high",
-        potential_level: "medium",
-    },
-    {
-        id: 4,
-        user_id: 7,
-        full_name: "Eva Martinez",
-        username: "intern_eva",
-        email: "eva@example.com",
-        pic_id: 3,
-        pic_name: "Alice Williams",
-        batch: "2023-Q4",
-        division: "Engineering",
-        university: "Universitas Brawijaya",
-        major: "Information Systems",
-        start_date: "2023-10-01",
-        end_date: "2024-04-01",
-        status: "inactive",
-        task_completion_rate: 65,
-        attendance_rate: 70,
-        performance_level: "low",
-        potential_level: "medium",
-    },
-    {
-        id: 5,
-        user_id: 8,
-        full_name: "Frank Zhang",
-        username: "intern_frank",
-        email: "frank@example.com",
-        pic_id: 2,
-        pic_name: "John Smith",
-        batch: "2024-Q1",
-        division: "Data Analytics",
-        university: "Universitas Airlangga",
-        major: "Statistics",
-        start_date: "2024-01-15",
-        end_date: "2024-07-15",
-        status: "active",
-        task_completion_rate: 88,
-        attendance_rate: 90,
-        performance_level: "high",
-        potential_level: "high",
-    },
-];
+// Stats response from backend
+export interface InternStats {
+    total_interns: number;
+    active_interns: number;
+    current_batch: string;
+    performance_avg: string;
+}
+
+// Create intern request payload
+export interface CreateInternPayload {
+    full_name: string;
+    username: string;
+    email: string;
+    password: string;
+    pic_id: number;
+    batch: string;
+    division: string;
+    university: string;
+    major: string;
+    start_date: string;
+    end_date: string;
+}
+
+// PIC option for dropdown
+export interface PICOption {
+    id: number;
+    full_name: string;
+}
 
 /**
- * Fetch interns with pagination
+ * Fetch interns with pagination from backend API
  */
 export async function fetchInterns(page: number = 1, limit: number = 10): Promise<InternsResponse> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 300));
+    try {
+        const response = await fetchWithAuth(
+            `${API_BASE_URL}/api/interns?page=${page}&limit=${limit}`
+        );
 
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedData = MOCK_INTERNS_DB.slice(startIndex, endIndex);
-    const totalPages = Math.ceil(MOCK_INTERNS_DB.length / limit);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-    return {
-        data: paginatedData,
-        total: MOCK_INTERNS_DB.length,
-        page,
-        totalPages,
-    };
+        const data = await response.json();
+        return {
+            data: data.data || [],
+            total: data.total || 0,
+            page: data.page || 1,
+            limit: data.limit || limit,
+            total_pages: data.total_pages || 0,
+        };
+    } catch (error) {
+        console.error("Error fetching interns:", error);
+        return {
+            data: [],
+            total: 0,
+            page: 1,
+            limit: limit,
+            total_pages: 0,
+        };
+    }
+}
+
+/**
+ * Fetch intern stats from backend
+ */
+export async function fetchInternStats(): Promise<InternStats> {
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/interns/stats`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.data as InternStats;
+    } catch (error) {
+        console.error("Error fetching intern stats:", error);
+        return {
+            total_interns: 0,
+            active_interns: 0,
+            current_batch: "-",
+            performance_avg: "-",
+        };
+    }
 }
 
 /**
  * Get intern by ID
  */
 export async function getInternById(id: number): Promise<Intern | null> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return MOCK_INTERNS_DB.find(intern => intern.id === id) || null;
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/interns/${id}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result.data as Intern;
+    } catch (error) {
+        console.error(`Error fetching intern ${id}:`, error);
+        return null;
+    }
 }
 
 /**
- * Get interns by PIC
+ * Create a new intern
  */
-export async function getInternsByPIC(picId: number): Promise<Intern[]> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return MOCK_INTERNS_DB.filter(intern => intern.pic_id === picId);
+export async function createIntern(payload: CreateInternPayload): Promise<{ user: InternUser; profile: Intern }> {
+    const response = await fetchWithAuth(`${API_BASE_URL}/api/interns`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
 }
 
 /**
- * Get interns by batch
+ * Delete an intern
  */
-export async function getInternsByBatch(batch: string): Promise<Intern[]> {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return MOCK_INTERNS_DB.filter(intern => intern.batch === batch);
+export async function deleteIntern(id: number): Promise<boolean> {
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/interns/${id}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(`Error deleting intern ${id}:`, error);
+        throw error;
+    }
 }
 
 /**
- * Get total interns count
+ * Fetch available PICs (users with PIC/HR/Admin roles) for the dropdown
  */
-export async function getTotalInternsCount(): Promise<number> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return MOCK_INTERNS_DB.length;
-}
+export async function fetchPICs(): Promise<PICOption[]> {
+    try {
+        const response = await fetchWithAuth(
+            `${API_BASE_URL}/api/users?page=1&limit=100`
+        );
 
-/**
- * Get active interns count
- */
-export async function getActiveInternsCount(): Promise<number> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return MOCK_INTERNS_DB.filter(intern => intern.status === "active").length;
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Filter users that can be PICs (role_id 1=super_admin, 2=hr, 3=pic)
+        const users = data.data || [];
+        return users
+            .filter((u: any) => {
+                const roleId = u.role_id || (u.role && u.role.id);
+                return roleId && [1, 2, 3].includes(roleId);
+            })
+            .map((u: any) => ({
+                id: u.id,
+                full_name: u.full_name,
+            }));
+    } catch (error) {
+        console.error("Error fetching PICs:", error);
+        return [];
+    }
 }

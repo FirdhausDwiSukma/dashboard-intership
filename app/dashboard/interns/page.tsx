@@ -15,9 +15,19 @@ import {
     CheckCircle2,
     AlertCircle,
     UserCheck,
-    X
+    X,
+    Loader2
 } from "lucide-react";
-import { fetchInterns, getActiveInternsCount, getTotalInternsCount, type Intern } from "@/app/services/internService";
+import {
+    fetchInterns,
+    fetchInternStats,
+    createIntern,
+    fetchPICs,
+    type Intern,
+    type InternStats,
+    type PICOption,
+    type CreateInternPayload,
+} from "@/app/services/internService";
 
 export default function InternsPage() {
     const [interns, setInterns] = useState<Intern[]>([]);
@@ -25,11 +35,19 @@ export default function InternsPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
-    const [activeCount, setActiveCount] = useState(0);
+    const [stats, setStats] = useState<InternStats>({
+        total_interns: 0,
+        active_interns: 0,
+        current_batch: "-",
+        performance_avg: "-",
+    });
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedBatch, setSelectedBatch] = useState<string>("all");
     const [selectedDivision, setSelectedDivision] = useState<string>("all");
     const [showAddModal, setShowAddModal] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [availablePICs, setAvailablePICs] = useState<PICOption[]>([]);
     const [formData, setFormData] = useState({
         full_name: "",
         username: "",
@@ -48,25 +66,30 @@ export default function InternsPage() {
     // Fetch data
     useEffect(() => {
         loadInterns();
-        loadStats();
     }, [currentPage]);
+
+    useEffect(() => {
+        loadStats();
+        loadPICs();
+    }, []);
 
     const loadInterns = async () => {
         setLoading(true);
         const response = await fetchInterns(currentPage, itemsPerPage);
         setInterns(response.data);
-        setTotalPages(response.totalPages);
+        setTotalPages(response.total_pages);
         setTotalCount(response.total);
         setLoading(false);
     };
 
     const loadStats = async () => {
-        const [total, active] = await Promise.all([
-            getTotalInternsCount(),
-            getActiveInternsCount()
-        ]);
-        setTotalCount(total);
-        setActiveCount(active);
+        const statsData = await fetchInternStats();
+        setStats(statsData);
+    };
+
+    const loadPICs = async () => {
+        const pics = await fetchPICs();
+        setAvailablePICs(pics);
     };
 
     // Get avatar URL
@@ -88,6 +111,26 @@ export default function InternsPage() {
         }
     };
 
+    // Get status from nested user object
+    const getInternStatus = (intern: Intern): string => {
+        return intern.user?.status || "inactive";
+    };
+
+    // Get full name from nested user object
+    const getInternName = (intern: Intern): string => {
+        return intern.user?.full_name || "Unknown";
+    };
+
+    // Get email from nested user object
+    const getInternEmail = (intern: Intern): string => {
+        return intern.user?.email || "";
+    };
+
+    // Get PIC name from nested pic object
+    const getPICName = (intern: Intern): string => {
+        return intern.pic?.full_name || "Unassigned";
+    };
+
     // Handle form input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -97,47 +140,65 @@ export default function InternsPage() {
     // Handle form submit
     const handleSubmitIntern = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Connect to backend API
-        console.log("Creating intern with data:", formData);
+        setSubmitting(true);
+        setSubmitError(null);
 
-        // For now, just close modal and show success message
-        alert("Intern creation will be implemented when backend is ready!");
-        setShowAddModal(false);
+        try {
+            const payload: CreateInternPayload = {
+                full_name: formData.full_name,
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                pic_id: parseInt(formData.pic_id),
+                batch: formData.batch,
+                division: formData.division,
+                university: formData.university,
+                major: formData.major,
+                start_date: formData.start_date,
+                end_date: formData.end_date,
+            };
 
-        // Reset form
-        setFormData({
-            full_name: "",
-            username: "",
-            email: "",
-            password: "",
-            pic_id: "",
-            batch: "",
-            division: "",
-            university: "",
-            major: "",
-            start_date: "",
-            end_date: "",
-        });
+            await createIntern(payload);
+
+            // Close modal and reset form
+            setShowAddModal(false);
+            setFormData({
+                full_name: "",
+                username: "",
+                email: "",
+                password: "",
+                pic_id: "",
+                batch: "",
+                division: "",
+                university: "",
+                major: "",
+                start_date: "",
+                end_date: "",
+            });
+
+            // Reload data
+            await Promise.all([loadInterns(), loadStats()]);
+        } catch (error: any) {
+            setSubmitError(error.message || "Failed to create intern");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    // Mock PIC list (will be replaced with API call)
-    const availablePICs = [
-        { id: 2, name: "John Smith" },
-        { id: 3, name: "Alice Williams" },
-    ];
-
-    // Filtered interns
+    // Filtered interns (client-side filtering on current page data)
     const filteredInterns = interns.filter(intern => {
-        const matchesSearch = intern.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            intern.email.toLowerCase().includes(searchQuery.toLowerCase());
+        const name = getInternName(intern);
+        const email = getInternEmail(intern);
+        const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            email.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesBatch = selectedBatch === "all" || intern.batch === selectedBatch;
         const matchesDivision = selectedDivision === "all" || intern.division === selectedDivision;
         return matchesSearch && matchesBatch && matchesDivision;
     });
 
-    // Get unique batches and divisions
-    const batches = Array.from(new Set(interns.map(i => i.batch)));
-    const divisions = Array.from(new Set(interns.map(i => i.division)));
+    // Get unique batches and divisions from current data
+    const batches = Array.from(new Set(interns.map(i => i.batch).filter(Boolean)));
+    const divisions = Array.from(new Set(interns.map(i => i.division).filter(Boolean)));
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -168,7 +229,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Total Interns</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalCount}</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total_interns}</p>
                             </div>
                             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
                                 <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -180,7 +241,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Active Interns</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{activeCount}</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.active_interns}</p>
                             </div>
                             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
                                 <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -192,7 +253,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Current Batch</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">2024-Q1</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.current_batch}</p>
                             </div>
                             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
                                 <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -204,7 +265,7 @@ export default function InternsPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Avg Performance</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">85%</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.performance_avg}</p>
                             </div>
                             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
                                 <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -281,125 +342,132 @@ export default function InternsPage() {
                             <p className="text-gray-500 dark:text-gray-400">No interns found</p>
                         </div>
                     ) : (
-                        filteredInterns.map((intern) => (
-                            <div key={intern.id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-                                {/* Header with Avatar */}
-                                <div className="flex items-start gap-4 mb-4">
-                                    <img
-                                        src={intern.avatar_url || getAvatarUrl(intern.full_name)}
-                                        alt={intern.full_name}
-                                        className="w-16 h-16 rounded-full object-cover border-2 border-primary-200"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                            {intern.full_name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                                            {intern.email}
-                                        </p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${intern.status === "active"
-                                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                                : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
-                                                }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${intern.status === "active" ? "bg-green-600" : "bg-gray-600"
-                                                    }`} />
-                                                {intern.status.charAt(0).toUpperCase() + intern.status.slice(1)}
+                        filteredInterns.map((intern) => {
+                            const internName = getInternName(intern);
+                            const internEmail = getInternEmail(intern);
+                            const internStatus = getInternStatus(intern);
+                            const picName = getPICName(intern);
+
+                            return (
+                                <div key={intern.id} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+                                    {/* Header with Avatar */}
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <img
+                                            src={intern.user?.avatar_url || getAvatarUrl(internName)}
+                                            alt={internName}
+                                            className="w-16 h-16 rounded-full object-cover border-2 border-primary-200"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                                {internName}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                                                {internEmail}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full ${internStatus === "active"
+                                                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                                    : "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+                                                    }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${internStatus === "active" ? "bg-green-600" : "bg-gray-600"
+                                                        }`} />
+                                                    {internStatus.charAt(0).toUpperCase() + internStatus.slice(1)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Info Grid */}
+                                    <div className="space-y-3">
+                                        {/* PIC */}
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <UserCheck className="w-4 h-4 text-gray-400" />
+                                            <span className="text-gray-500 dark:text-gray-400">PIC:</span>
+                                            <span className="font-medium text-gray-900 dark:text-white">{picName}</span>
+                                        </div>
+
+                                        {/* Division & Batch */}
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Building2 className="w-4 h-4 text-gray-400" />
+                                            <span className="text-gray-900 dark:text-white font-medium">{intern.division}</span>
+                                            <span className="text-gray-400">•</span>
+                                            <span className="text-gray-500 dark:text-gray-400">{intern.batch}</span>
+                                        </div>
+
+                                        {/* Education */}
+                                        <div className="flex items-start gap-2 text-sm">
+                                            <GraduationCap className="w-4 h-4 text-gray-400 mt-0.5" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium text-gray-900 dark:text-white truncate">{intern.university}</p>
+                                                <p className="text-gray-500 dark:text-gray-400 truncate">{intern.major}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Period */}
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <Clock className="w-4 h-4 text-gray-400" />
+                                            <span className="text-gray-500 dark:text-gray-400">
+                                                {new Date(intern.start_date).toLocaleDateString()} - {new Date(intern.end_date).toLocaleDateString()}
                                             </span>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Info Grid */}
-                                <div className="space-y-3">
-                                    {/* PIC */}
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <UserCheck className="w-4 h-4 text-gray-400" />
-                                        <span className="text-gray-500 dark:text-gray-400">PIC:</span>
-                                        <span className="font-medium text-gray-900 dark:text-white">{intern.pic_name}</span>
-                                    </div>
-
-                                    {/* Division & Batch */}
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Building2 className="w-4 h-4 text-gray-400" />
-                                        <span className="text-gray-900 dark:text-white font-medium">{intern.division}</span>
-                                        <span className="text-gray-400">•</span>
-                                        <span className="text-gray-500 dark:text-gray-400">{intern.batch}</span>
-                                    </div>
-
-                                    {/* Education */}
-                                    <div className="flex items-start gap-2 text-sm">
-                                        <GraduationCap className="w-4 h-4 text-gray-400 mt-0.5" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-gray-900 dark:text-white truncate">{intern.university}</p>
-                                            <p className="text-gray-500 dark:text-gray-400 truncate">{intern.major}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Period */}
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Clock className="w-4 h-4 text-gray-400" />
-                                        <span className="text-gray-500 dark:text-gray-400">
-                                            {new Date(intern.start_date).toLocaleDateString()} - {new Date(intern.end_date).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Performance Metrics */}
-                                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Task Completion</p>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                                    <div
-                                                        className="bg-primary-500 h-2 rounded-full transition-all"
-                                                        style={{ width: `${intern.task_completion_rate}%` }}
-                                                    />
+                                    {/* Performance Metrics */}
+                                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Task Completion</p>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                        <div
+                                                            className="bg-primary-500 h-2 rounded-full transition-all"
+                                                            style={{ width: `${(intern as any).task_completion_rate ?? 0}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {(intern as any).task_completion_rate ?? 0}%
+                                                    </span>
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {intern.task_completion_rate}%
-                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Attendance</p>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                        <div
+                                                            className="bg-green-500 h-2 rounded-full transition-all"
+                                                            style={{ width: `${(intern as any).attendance_rate ?? 0}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {(intern as any).attendance_rate ?? 0}%
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Attendance</p>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                                    <div
-                                                        className="bg-green-500 h-2 rounded-full transition-all"
-                                                        style={{ width: `${intern.attendance_rate}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {intern.attendance_rate}%
-                                                </span>
-                                            </div>
+
+                                        {/* Performance & Potential Badges */}
+                                        <div className="flex gap-2 mt-3">
+                                            <span className={`px-2 py-1 text-xs font-medium rounded ${getPerformanceBadge((intern as any).performance_level)}`}>
+                                                Performance: {((intern as any).performance_level || "N/A").toUpperCase()}
+                                            </span>
+                                            <span className={`px-2 py-1 text-xs font-medium rounded ${getPerformanceBadge((intern as any).potential_level)}`}>
+                                                Potential: {((intern as any).potential_level || "N/A").toUpperCase()}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    {/* Performance & Potential Badges */}
-                                    <div className="flex gap-2 mt-3">
-                                        <span className={`px-2 py-1 text-xs font-medium rounded ${getPerformanceBadge(intern.performance_level)}`}>
-                                            Performance: {intern.performance_level?.toUpperCase()}
-                                        </span>
-                                        <span className={`px-2 py-1 text-xs font-medium rounded ${getPerformanceBadge(intern.potential_level)}`}>
-                                            Potential: {intern.potential_level?.toUpperCase()}
-                                        </span>
+                                    {/* Actions */}
+                                    <div className="mt-4 flex gap-2">
+                                        <button className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">
+                                            View Details
+                                        </button>
+                                        <button className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Edit
+                                        </button>
                                     </div>
                                 </div>
-
-                                {/* Actions */}
-                                <div className="mt-4 flex gap-2">
-                                    <button className="flex-1 px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm font-medium">
-                                        View Details
-                                    </button>
-                                    <button className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Edit
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
@@ -454,7 +522,7 @@ export default function InternsPage() {
                                 Add New Intern
                             </h2>
                             <button
-                                onClick={() => setShowAddModal(false)}
+                                onClick={() => { setShowAddModal(false); setSubmitError(null); }}
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                             >
                                 <X className="w-5 h-5" />
@@ -463,6 +531,14 @@ export default function InternsPage() {
 
                         {/* Modal Body - Form */}
                         <form onSubmit={handleSubmitIntern} className="p-6 space-y-6">
+                            {/* Error message */}
+                            {submitError && (
+                                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                                    {submitError}
+                                </div>
+                            )}
+
                             {/* Personal Information */}
                             <div>
                                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -550,7 +626,7 @@ export default function InternsPage() {
                                         >
                                             <option value="">Select PIC</option>
                                             {availablePICs.map(pic => (
-                                                <option key={pic.id} value={pic.id}>{pic.name}</option>
+                                                <option key={pic.id} value={pic.id}>{pic.full_name}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -669,16 +745,25 @@ export default function InternsPage() {
                             <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <button
                                     type="button"
-                                    onClick={() => setShowAddModal(false)}
-                                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-gray-700 dark:text-gray-300"
+                                    onClick={() => { setShowAddModal(false); setSubmitError(null); }}
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-gray-700 dark:text-gray-300 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium"
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    Create Intern
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : (
+                                        "Create Intern"
+                                    )}
                                 </button>
                             </div>
                         </form>
