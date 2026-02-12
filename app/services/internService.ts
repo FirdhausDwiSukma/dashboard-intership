@@ -27,8 +27,8 @@ export interface Intern {
     id: number;
     user_id: number;
     user: InternUser;
-    pic_id: number;
-    pic: InternUser;
+    pic_id: number | null;
+    pic: InternUser | null;
     batch: string;
     division: string;
     university: string;
@@ -61,7 +61,7 @@ export interface CreateInternPayload {
     username: string;
     email: string;
     password: string;
-    pic_id: number;
+    pic_id?: number;
     batch: string;
     division: string;
     university: string;

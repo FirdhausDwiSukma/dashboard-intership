@@ -19,6 +19,12 @@ import {
     FileText,
     HelpCircle,
     GraduationCap,
+    Grid3X3,
+    Lock,
+    UserPlus,
+    ClipboardList,
+    Download,
+    Briefcase,
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
@@ -51,6 +57,20 @@ const sidebarItems: SidebarItem[] = [
     },
     { icon: Users, label: "Users", href: "/dashboard/users" },
     { icon: GraduationCap, label: "Intership Management", href: "/dashboard/interns" },
+    {
+        icon: Briefcase,
+        label: "HR Dashboard",
+        submenu: [
+            { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/hr" },
+            { icon: GraduationCap, label: "All Interns", href: "/dashboard/hr/all-interns" },
+            { icon: UserPlus, label: "Add Intern", href: "/dashboard/hr/add-intern" },
+            { icon: Users, label: "Assign PIC", href: "/dashboard/hr/assign-pic" },
+            { icon: Lock, label: "Lock Period", href: "/dashboard/hr/lock-period" },
+            { icon: Grid3X3, label: "9 Grid Overview", href: "/dashboard/hr/nine-grid" },
+            { icon: ClipboardList, label: "Reporting", href: "/dashboard/hr/reporting" },
+            { icon: Download, label: "Export Data", href: "/dashboard/hr/export" },
+        ]
+    },
 ];
 
 // Bottom menu items (above user profile)
@@ -214,6 +234,8 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                     {sidebarItems.filter(item => {
                         // Hide Users menu if not Super Admin
                         if (item.label === "Users" && role !== "super_admin") return false;
+                        // Hide HR Dashboard if not HR or Super Admin
+                        if (item.label === "HR Dashboard" && role !== "hr" && role !== "super_admin") return false;
                         return true;
                     }).map((item) => {
                         const hasSubmenu = item.submenu && item.submenu.length > 0;

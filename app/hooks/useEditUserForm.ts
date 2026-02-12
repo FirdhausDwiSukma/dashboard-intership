@@ -40,7 +40,7 @@ export const useEditUserForm = ({ user, onSuccess, onError }: UseEditUserFormPro
                 fullName: user.full_name,
                 username: user.username,
                 email: user.email,
-                role: user.role,
+                role: typeof user.role === 'string' ? user.role : user.role.name,
                 status: user.status,
                 contacts: user.contacts?.map(c => ({
                     type: c.contact_type,
@@ -168,7 +168,7 @@ export const useEditUserForm = ({ user, onSuccess, onError }: UseEditUserFormPro
                 fullName: user.full_name,
                 username: user.username,
                 email: user.email,
-                role: user.role,
+                role: typeof user.role === 'string' ? user.role : user.role.name,
                 status: user.status,
                 contacts: user.contacts?.map(c => ({
                     type: c.contact_type,
