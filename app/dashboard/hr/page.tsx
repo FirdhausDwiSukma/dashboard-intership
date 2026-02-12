@@ -155,6 +155,29 @@ export default function HRDashboardPage() {
                 </div>
             </div>
 
+            {/* Alerts - Moved above 9 Grid Box as requested */}
+            {stats?.alerts && stats.alerts.length > 0 && (
+                <div className="space-y-3">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Notification</h2>
+                    {stats.alerts.map((alert: HRAlert, index: number) => (
+                        <div
+                            key={index}
+                            className={`${getAlertBg(alert.type)} rounded-xl border p-4 flex items-center gap-3`}
+                        >
+                            <span className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                {getAlertIcon(alert.type)}
+                            </span>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.message}</p>
+                            </div>
+                            <span className="text-xs font-bold text-white bg-red-500 rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                                {alert.count}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* 9 Grid Mini Matrix */}
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -198,26 +221,7 @@ export default function HRDashboardPage() {
                 </div>
             </div>
 
-            {/* Alerts */}
-            {stats?.alerts && stats.alerts.length > 0 && (
-                <div className="space-y-3">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Alerts</h2>
-                    {stats.alerts.map((alert: HRAlert, index: number) => (
-                        <div
-                            key={index}
-                            className={`${getAlertBg(alert.type)} rounded-xl border p-4 flex items-center gap-3`}
-                        >
-                            {getAlertIcon(alert.type)}
-                            <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">{alert.message}</p>
-                            </div>
-                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-full px-3 py-1">
-                                {alert.count}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
+
         </div>
     );
 }
