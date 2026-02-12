@@ -3,15 +3,19 @@
 import { useEffect, useState } from "react";
 import { assignPIC } from "@/app/services/hrService";
 import { fetchPICs, type PICOption } from "@/app/services/internService";
+import { fetchWithAuth } from "@/app/utils/authHelper";
 import { Users, Check, AlertCircle } from "lucide-react";
 
 interface UnassignedIntern {
     id: number;
     user_id: number;
     user: { id: number; full_name: string; email: string };
+    pic_id: number | null;
     batch: string;
     division: string;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function HRAssignPICPage() {
     const [interns, setInterns] = useState<UnassignedIntern[]>([]);
@@ -32,16 +36,11 @@ export default function HRAssignPICPage() {
             const [picsData] = await Promise.all([fetchPICs()]);
             setPics(picsData);
 
-            // Fetch unassigned interns from the regular interns endpoint
-            const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-            const { fetchWithAuth } = await import("@/app/utils/authHelper");
-            const res = await fetchWithAuth(`${API_BASE_URL}/api/interns?page=1&limit=100`);
+            // Fetch only unassigned interns (pic_id IS NULL)
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/hr/unassigned-interns`);
             if (res.ok) {
                 const json = await res.json();
-                const allInterns = json.data || [];
-                const unassigned = allInterns.filter((i: UnassignedIntern) => !i.user_id || i.user_id === 0);
-                // Show all interns for now, filtering will be done server-side when implemented
-                setInterns(allInterns);
+                setInterns(json.data || []);
             }
         } catch {
             setError("Failed to load data");
@@ -64,7 +63,7 @@ export default function HRAssignPICPage() {
         try {
             await assignPIC(internProfileId, picId);
             setSuccess(`PIC assigned successfully!`);
-            // Remove from list
+            // Remove from list immediately
             setInterns((prev) => prev.filter((i) => i.id !== internProfileId));
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to assign PIC");
