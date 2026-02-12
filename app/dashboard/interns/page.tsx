@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
     Users,
     Search,
@@ -222,13 +223,13 @@ export default function InternsPage() {
                         </p>
                     </div>
                     {canAddIntern && (
-                        <button
-                            onClick={() => setShowAddModal(true)}
+                        <Link
+                            href="/dashboard/hr/add-intern"
                             className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2"
                         >
                             <UserPlus className="w-4 h-4" />
                             Add Intern
-                        </button>
+                        </Link>
                     )}
                 </div>
 

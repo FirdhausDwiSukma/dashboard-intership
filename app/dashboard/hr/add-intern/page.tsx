@@ -297,8 +297,27 @@ export default function HRAddInternPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className={labelClass}>Batch <span className="text-red-500">*</span></label>
-                        <input name="batch" value={form.batch} onChange={handleChange} required className={inputClass} placeholder="2026-Q1" />
+                        <label className={labelClass}>
+                            Batch <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            name="batch"
+                            value={form.batch}
+                            onChange={handleChange}
+                            required
+                            className={inputClass}
+                        >
+                            <option value="">Select Batch</option>
+                            {[1, 2, 3, 4].map((q) => {
+                                const year = new Date().getFullYear();
+                                const value = `${year}-Q${q}`;
+                                return (
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
+                                );
+                            })}
+                        </select>
                     </div>
                     <div>
                         <label className={labelClass}>Division <span className="text-red-500">*</span></label>
