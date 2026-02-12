@@ -173,7 +173,7 @@ export default function HRAddInternPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className={labelClass}>Full Name *</label>
+                        <label className={labelClass}>Full Name <span className="text-red-500">*</span></label>
                         <input
                             name="full_name"
                             value={form.full_name}
@@ -186,7 +186,7 @@ export default function HRAddInternPage() {
                         {fieldErrors.full_name && <p className="text-xs text-red-500 mt-1">{fieldErrors.full_name}</p>}
                     </div>
                     <div>
-                        <label className={labelClass}>Username *</label>
+                        <label className={labelClass}>Username <span className="text-red-500">*</span></label>
                         <input
                             name="username"
                             value={form.username}
@@ -198,7 +198,7 @@ export default function HRAddInternPage() {
                         {fieldErrors.username && <p className="text-xs text-red-500 mt-1">{fieldErrors.username}</p>}
                     </div>
                     <div>
-                        <label className={labelClass}>Email *</label>
+                        <label className={labelClass}>Email <span className="text-red-500">*</span></label>
                         <input
                             name="email"
                             type="email"
@@ -226,7 +226,7 @@ export default function HRAddInternPage() {
                         />
                     </div>
                     <div>
-                        <label className={labelClass}>Password *</label>
+                        <label className={labelClass}>Password <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <input
                                 name="password"
@@ -249,7 +249,7 @@ export default function HRAddInternPage() {
                         {fieldErrors.password && <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>}
                     </div>
                     <div>
-                        <label className={labelClass}>Confirm Password *</label>
+                        <label className={labelClass}>Confirm Password <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <input
                                 name="confirm_password"
@@ -297,27 +297,27 @@ export default function HRAddInternPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className={labelClass}>Batch *</label>
+                        <label className={labelClass}>Batch <span className="text-red-500">*</span></label>
                         <input name="batch" value={form.batch} onChange={handleChange} required className={inputClass} placeholder="2026-Q1" />
                     </div>
                     <div>
-                        <label className={labelClass}>Division *</label>
+                        <label className={labelClass}>Division <span className="text-red-500">*</span></label>
                         <input name="division" value={form.division} onChange={handleChange} required className={inputClass} placeholder="Engineering" />
                     </div>
                     <div>
-                        <label className={labelClass}>University *</label>
+                        <label className={labelClass}>University <span className="text-red-500">*</span></label>
                         <input name="university" value={form.university} onChange={handleChange} required className={inputClass} placeholder="University of..." />
                     </div>
                     <div>
-                        <label className={labelClass}>Major *</label>
+                        <label className={labelClass}>Major <span className="text-red-500">*</span></label>
                         <input name="major" value={form.major} onChange={handleChange} required className={inputClass} placeholder="Computer Science" />
                     </div>
                     <div>
-                        <label className={labelClass}>Start Date *</label>
+                        <label className={labelClass}>Start Date <span className="text-red-500">*</span></label>
                         <input name="start_date" type="date" value={form.start_date} onChange={handleChange} required className={inputClass} />
                     </div>
                     <div>
-                        <label className={labelClass}>End Date *</label>
+                        <label className={labelClass}>End Date <span className="text-red-500">*</span></label>
                         <input name="end_date" type="date" value={form.end_date} onChange={handleChange} required className={inputClass} />
                     </div>
                 </div>
