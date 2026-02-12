@@ -39,12 +39,6 @@ export default function HRAddInternPage() {
         }
     };
 
-    // Auto-generate username from full name
-    const autoUsername = () => {
-        const name = form.full_name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
-        setForm({ ...form, username: "intern_" + name });
-    };
-
     // Password validation checks
     const passwordChecks = {
         minLength: form.password.length >= 8,
@@ -178,10 +172,10 @@ export default function HRAddInternPage() {
                             name="full_name"
                             value={form.full_name}
                             onChange={handleChange}
-                            onBlur={autoUsername}
+
                             required
                             className={fieldErrors.full_name ? inputErrorClass : inputClass}
-                            placeholder="John Doe"
+                            placeholder="full name"
                         />
                         {fieldErrors.full_name && <p className="text-xs text-red-500 mt-1">{fieldErrors.full_name}</p>}
                     </div>
@@ -193,7 +187,7 @@ export default function HRAddInternPage() {
                             onChange={handleChange}
                             required
                             className={fieldErrors.username ? inputErrorClass : inputClass}
-                            placeholder="intern_john_doe"
+                            placeholder="username"
                         />
                         {fieldErrors.username && <p className="text-xs text-red-500 mt-1">{fieldErrors.username}</p>}
                     </div>
@@ -206,7 +200,7 @@ export default function HRAddInternPage() {
                             onChange={handleChange}
                             required
                             className={fieldErrors.email ? inputErrorClass : inputClass}
-                            placeholder="john@example.com"
+                            placeholder="email"
                         />
                         {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
                     </div>
