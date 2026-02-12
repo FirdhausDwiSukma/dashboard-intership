@@ -19,6 +19,7 @@ export default function HRAddInternPage() {
         full_name: "",
         username: "",
         email: "",
+        phone: "",
         password: "",
         confirm_password: "",
         batch: "",
@@ -104,6 +105,7 @@ export default function HRAddInternPage() {
                 username: form.username,
                 email: form.email,
                 password: form.password,
+                phone: form.phone || undefined,
                 batch: form.batch,
                 division: form.division,
                 university: form.university,
@@ -207,6 +209,21 @@ export default function HRAddInternPage() {
                             placeholder="john@example.com"
                         />
                         {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
+                    </div>
+                    <div>
+                        <label className={labelClass}>Phone Number</label>
+                        <input
+                            name="phone"
+                            type="tel"
+                            value={form.phone}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9]/g, "");
+                                setForm({ ...form, phone: value });
+                            }}
+                            className={inputClass}
+                            placeholder="08xxxxxxxxxx"
+                            maxLength={13}
+                        />
                     </div>
                     <div>
                         <label className={labelClass}>Password *</label>

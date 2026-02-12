@@ -61,6 +61,7 @@ export interface CreateInternPayload {
     username: string;
     email: string;
     password: string;
+    phone?: string;
     pic_id?: number;
     batch: string;
     division: string;
