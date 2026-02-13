@@ -90,13 +90,15 @@ export async function fetchInterns(page: number = 1, limit: number = 10): Promis
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const json = await response.json();
+        // Backend wraps response in { success, message, data: { data, total, page, limit, total_pages } }
+        const payload = json.data || json;
         return {
-            data: data.data || [],
-            total: data.total || 0,
-            page: data.page || 1,
-            limit: data.limit || limit,
-            total_pages: data.total_pages || 0,
+            data: payload.data || [],
+            total: payload.total || 0,
+            page: payload.page || 1,
+            limit: payload.limit || limit,
+            total_pages: payload.total_pages || 0,
         };
     } catch (error) {
         console.error("Error fetching interns:", error);
@@ -204,9 +206,11 @@ export async function fetchPICs(): Promise<PICOption[]> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const json = await response.json();
+        // Backend wraps response in { success, message, data: { data: [...users], ... } }
+        const payload = json.data || json;
+        const users = payload.data || [];
         // Filter users that can be PICs (role_id 1=super_admin, 2=hr, 3=pic)
-        const users = data.data || [];
         return users
             .filter((u: any) => {
                 const roleId = u.role_id || (u.role && u.role.id);

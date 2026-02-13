@@ -102,7 +102,16 @@ export async function fetchAllInternsWithGrid(
   if (search) params.set("search", search);
   const res = await fetchWithAuth(`${API_BASE_URL}/api/hr/interns?${params.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch HR interns");
-  return await res.json();
+  const json = await res.json();
+  // Backend wraps response in { success, message, data: { data, total, page, limit, total_pages } }
+  const payload = json.data || json;
+  return {
+    data: payload.data || [],
+    total: payload.total || 0,
+    page: payload.page || 1,
+    limit: payload.limit || limit,
+    total_pages: payload.total_pages || 0,
+  };
 }
 
 /** Assign PIC to an intern */

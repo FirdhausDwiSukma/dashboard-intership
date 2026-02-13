@@ -53,8 +53,15 @@ export async function fetchUsers(page: number = 1, limit: number = 10): Promise<
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: UsersResponse = await response.json();
-        return data;
+        const json = await response.json();
+        // Backend wraps response in { success, message, data: { data, total, page, total_pages } }
+        const payload = json.data || json;
+        return {
+            data: payload.data || [],
+            total: payload.total || 0,
+            page: payload.page || 1,
+            totalPages: payload.total_pages ?? payload.totalPages ?? 0,
+        };
     } catch (error) {
         console.error("Error fetching users:", error);
         // Return empty data on error
@@ -80,8 +87,9 @@ export async function getTotalUsersCount(): Promise<number> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: UsersResponse = await response.json();
-        return data.total;
+        const json = await response.json();
+        const payload = json.data || json;
+        return payload.total || 0;
     } catch (error) {
         console.error("Error fetching user count:", error);
         return 0;
