@@ -213,55 +213,61 @@ export default function HRAllInternsPage() {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
-                                <th className="text-left px-4 py-3">
+                                <th className="text-left px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("full_name")}
-                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         Name
                                         <SortIcon column="full_name" />
                                     </button>
                                 </th>
-                                <th className="text-left px-4 py-3">
+                                <th className="text-left px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("department")}
-                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         Department
                                         <SortIcon column="department" />
                                     </button>
                                 </th>
-                                <th className="text-left px-4 py-3">
+                                <th className="text-left px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("pic_name")}
-                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         PIC
                                         <SortIcon column="pic_name" />
                                     </button>
                                 </th>
-                                <th className="text-center px-4 py-3">
+                                <th className="text-center px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("performance_score")}
-                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         Performance
                                         <SortIcon column="performance_score" />
                                     </button>
                                 </th>
-                                <th className="text-center px-4 py-3">
+                                <th className="text-center px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("potential_score")}
-                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         Potential
                                         <SortIcon column="potential_score" />
                                     </button>
                                 </th>
-                                <th className="text-center px-4 py-3">
+                                <th className="text-center px-4 py-3 select-none">
                                     <button
+                                        type="button"
                                         onClick={() => handleSort("grid_position")}
-                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                                        className="inline-flex items-center gap-2 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                     >
                                         Grid Position
                                         <SortIcon column="grid_position" />
@@ -284,7 +290,7 @@ export default function HRAllInternsPage() {
                                 </tr>
                             ) : (
                                 sortedInterns.map((intern) => (
-                                    <tr key={intern.intern_id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                    <tr key={intern.intern_id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b border-gray-100 dark:border-gray-800 last:border-0">
                                         <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{intern.full_name}</td>
                                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{intern.department || "—"}</td>
                                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{intern.pic_name}</td>
