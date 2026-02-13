@@ -70,17 +70,36 @@ export const useLoginForm = () => {
             // Store user info for dashboard display
             if (response.user) {
                 localStorage.setItem("username", response.user.full_name);
-                localStorage.setItem("role", typeof response.user.role === 'string' ? response.user.role : response.user.role.name);
+                const roleName = typeof response.user.role === 'string' ? response.user.role : response.user.role.name;
+                localStorage.setItem("role", roleName);
                 localStorage.setItem("email", response.user.email);
                 if (response.user.avatar_url) {
                     localStorage.setItem("avatar_url", response.user.avatar_url);
                 } else {
                     localStorage.removeItem("avatar_url");
                 }
-            }
 
-            // Redirect to dashboard
-            router.push("/dashboard");
+                // Role-based redirect
+                switch (roleName) {
+                    case "super_admin":
+                        router.push("/dashboard/admin");
+                        break;
+                    case "hr":
+                        router.push("/dashboard/hr");
+                        break;
+                    case "pic":
+                        router.push("/dashboard/mentor");
+                        break;
+                    case "intern":
+                        router.push("/dashboard/intern");
+                        break;
+                    default:
+                        router.push("/dashboard");
+                        break;
+                }
+            } else {
+                router.push("/dashboard");
+            }
         } catch (error: any) {
             const errorMessage = error.message || "Terjadi kesalahan saat login.";
 

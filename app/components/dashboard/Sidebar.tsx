@@ -25,11 +25,17 @@ import {
     ClipboardList,
     Download,
     Briefcase,
+    Shield,
+    Activity,
+    BarChart3,
+    Star,
+    MessageSquare,
+    User,
+    CalendarClock,
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { authHelper } from "@/app/utils/authHelper";
-import Image from "next/image";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -45,47 +51,159 @@ interface SidebarItem {
     submenu?: SidebarItem[];
 }
 
-const sidebarItems: SidebarItem[] = [
-    { icon: Home, label: "Home", href: "/dashboard" },
+// ─── ROLE-SPECIFIC SIDEBAR CONFIGURATIONS ────────────────────────────
+
+const adminSidebarItems: SidebarItem[] = [
+    { icon: Home, label: "Home", href: "/dashboard/admin" },
+    {
+        icon: Users,
+        label: "User Management",
+        submenu: [
+            { icon: Users, label: "All Users", href: "/dashboard/users" },
+            { icon: Shield, label: "Role Management", href: "/dashboard/admin/roles" },
+        ],
+    },
     {
         icon: LayoutDashboard,
-        label: "Dashboard",
+        label: "System Management",
         submenu: [
-            { icon: PieChart, label: "Analytics", href: "/dashboard/analytics" },
-            { icon: FileText, label: "Report", href: "/dashboard/report" },
-        ]
+            { icon: CalendarClock, label: "Period Management", href: "/dashboard/hr/lock-period" },
+            { icon: Grid3X3, label: "9 Grid Configuration", href: "/dashboard/hr/nine-grid" },
+        ],
     },
-    { icon: Users, label: "Users", href: "/dashboard/users" },
-    { icon: GraduationCap, label: "Intership Management", href: "/dashboard/interns" },
     {
-        icon: Briefcase,
-        label: "HR Dashboard",
+        icon: Activity,
+        label: "Monitoring",
         submenu: [
-            { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/hr" },
-            { icon: GraduationCap, label: "All Interns", href: "/dashboard/hr/all-interns" },
-            { icon: UserPlus, label: "Add Intern", href: "/dashboard/hr/add-intern" },
-            { icon: Users, label: "Assign PIC", href: "/dashboard/hr/assign-pic" },
-            { icon: Lock, label: "Lock Period", href: "/dashboard/hr/lock-period" },
-            { icon: Grid3X3, label: "9 Grid Overview", href: "/dashboard/hr/nine-grid" },
-            { icon: ClipboardList, label: "Reporting", href: "/dashboard/hr/reporting" },
+            { icon: FileText, label: "Audit Logs", href: "/dashboard/admin/audit-logs" },
+            { icon: Activity, label: "System Activity", href: "/dashboard/admin/activity" },
+        ],
+    },
+    {
+        icon: BarChart3,
+        label: "Reports",
+        submenu: [
+            { icon: PieChart, label: "Global Analytics", href: "/dashboard/analytics" },
             { icon: Download, label: "Export Data", href: "/dashboard/hr/export" },
-        ]
+        ],
     },
 ];
 
-// Bottom menu items (above user profile)
-const bottomMenuItems: SidebarItem[] = [
-    { icon: Settings, label: "Settings", href: "/dashboard/settings" },
-    { icon: Bell, label: "Notifications", href: "/dashboard/notifications" },
-    { icon: HelpCircle, label: "Support", href: "/dashboard/support" },
+const hrSidebarItems: SidebarItem[] = [
+    { icon: Home, label: "Home", href: "/dashboard/hr" },
+    {
+        icon: GraduationCap,
+        label: "Intern Management",
+        submenu: [
+            { icon: GraduationCap, label: "All Interns", href: "/dashboard/hr/all-interns" },
+            { icon: UserPlus, label: "Add Intern", href: "/dashboard/hr/add-intern" },
+            { icon: Users, label: "Assign PIC", href: "/dashboard/hr/assign-pic" },
+        ],
+    },
+    {
+        icon: Grid3X3,
+        label: "Evaluation",
+        submenu: [
+            { icon: Grid3X3, label: "9 Grid Overview", href: "/dashboard/hr/nine-grid" },
+            { icon: Lock, label: "Lock Period", href: "/dashboard/hr/lock-period" },
+        ],
+    },
+    {
+        icon: BarChart3,
+        label: "Reporting",
+        submenu: [
+            { icon: ClipboardList, label: "Performance Report", href: "/dashboard/hr/reporting" },
+            { icon: Download, label: "Export Data", href: "/dashboard/hr/export" },
+        ],
+    },
 ];
+
+const mentorSidebarItems: SidebarItem[] = [
+    { icon: Home, label: "Home", href: "/dashboard/mentor" },
+    {
+        icon: GraduationCap,
+        label: "My Interns",
+        submenu: [
+            { icon: GraduationCap, label: "Intern List", href: "/dashboard/mentor/interns" },
+        ],
+    },
+    {
+        icon: ClipboardList,
+        label: "Evaluation",
+        submenu: [
+            { icon: FileText, label: "Submit Review", href: "/dashboard/mentor/reviews/submit" },
+            { icon: ClipboardList, label: "Review History", href: "/dashboard/mentor/reviews/history" },
+        ],
+    },
+    {
+        icon: Grid3X3,
+        label: "9 Grid",
+        submenu: [
+            { icon: Grid3X3, label: "My Intern Grid Result", href: "/dashboard/mentor/nine-grid" },
+        ],
+    },
+];
+
+const internSidebarItems: SidebarItem[] = [
+    { icon: Home, label: "Home", href: "/dashboard/intern" },
+    {
+        icon: Star,
+        label: "My Performance",
+        submenu: [
+            { icon: BarChart3, label: "Current Evaluation", href: "/dashboard/intern/evaluation" },
+            { icon: Grid3X3, label: "9 Grid Position", href: "/dashboard/intern/nine-grid" },
+        ],
+    },
+    {
+        icon: MessageSquare,
+        label: "Feedback",
+        submenu: [
+            { icon: MessageSquare, label: "Mentor Notes", href: "/dashboard/intern/feedback" },
+        ],
+    },
+];
+
+function getSidebarItemsForRole(role: string | null): SidebarItem[] {
+    switch (role) {
+        case "super_admin":
+            return adminSidebarItems;
+        case "hr":
+            return hrSidebarItems;
+        case "pic":
+            return mentorSidebarItems;
+        case "intern":
+            return internSidebarItems;
+        default:
+            return adminSidebarItems; // fallback
+    }
+}
+
+function getBottomMenuItems(role: string | null): SidebarItem[] {
+    const items: SidebarItem[] = [
+        { icon: Settings, label: "Settings", href: "/dashboard/settings" },
+    ];
+
+    // Only add notifications for admin/hr
+    if (role === "super_admin" || role === "hr") {
+        items.push({ icon: Bell, label: "Notifications", href: "/dashboard/notifications" });
+    }
+
+    // Profile for mentor/intern
+    if (role === "pic" || role === "intern") {
+        items.unshift({ icon: User, label: "Profile", href: "/dashboard/profile" });
+    }
+
+    return items;
+}
+
+// ─── SIDEBAR COMPONENT ──────────────────────────────────────────────
 
 export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const [username, setUsername] = useState<string>("Admin");
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null); // New state
-    const [email, setEmail] = useState<string>("admin@dashtern.com"); // New state
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [email, setEmail] = useState<string>("admin@dashtern.com");
     const [role, setRole] = useState<string | null>(null);
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
     const [showProfileCard, setShowProfileCard] = useState(false);
@@ -93,7 +211,6 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
 
     // Function to load profile data
     const loadProfileData = () => {
-        // Try to get from localStorage first for immediate display
         const storedUser = localStorage.getItem("username");
         const storedRole = localStorage.getItem("role");
         const storedAvatar = localStorage.getItem("avatar_url");
@@ -108,9 +225,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
     useEffect(() => {
         loadProfileData();
 
-        // Listen for profile update events
         const handleProfileUpdate = (event: CustomEvent) => {
-            // Reload data from storage or payload
             if (event.detail) {
                 if (event.detail.full_name) setUsername(event.detail.full_name);
                 if (event.detail.avatar_url) setAvatarUrl(event.detail.avatar_url);
@@ -156,6 +271,10 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
         };
     }, [showProfileCard]);
 
+    // Get role-specific menu items
+    const sidebarItems = getSidebarItemsForRole(role);
+    const bottomMenuItems = getBottomMenuItems(role);
+
     return (
         <>
             {/* Mobile Overlay */}
@@ -171,7 +290,6 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
             <aside
                 className={cn(
                     "fixed inset-y-0 left-0 z-50 bg-white dark:bg-[#0a0a0a] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out flex flex-col",
-                    // Mobile: controlled by isOpen (width 72). Desktop: controlled by isCollapsed (width 72 or 20)
                     isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0",
                     isCollapsed ? "lg:w-20" : "lg:w-72"
                 )}
@@ -231,13 +349,7 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                         </p>
                     )}
 
-                    {sidebarItems.filter(item => {
-                        // Hide Users menu if not Super Admin
-                        if (item.label === "Users" && role !== "super_admin") return false;
-                        // Hide HR Dashboard if not HR or Super Admin
-                        if (item.label === "HR Dashboard" && role !== "hr" && role !== "super_admin") return false;
-                        return true;
-                    }).map((item) => {
+                    {sidebarItems.map((item) => {
                         const hasSubmenu = item.submenu && item.submenu.length > 0;
                         const isSubmenuOpen = openSubmenu === item.label;
                         const isParentActive = item.submenu?.some(sub => pathname === sub.href);
@@ -250,11 +362,9 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                     <button
                                         onClick={() => {
                                             if (isCollapsed) {
-                                                // Expand sidebar when collapsed so submenu is visible
                                                 toggleCollapse();
                                                 setOpenSubmenu(item.label);
                                             } else {
-                                                // Toggle submenu in expanded state
                                                 toggleSubmenu(item.label);
                                             }
                                         }}
@@ -290,7 +400,6 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                     <Link
                                         href={item.href!}
                                         onClick={() => {
-                                            // Close any open submenu when clicking other menu items
                                             setOpenSubmenu(null);
                                         }}
                                         className={cn(
@@ -358,7 +467,6 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 key={item.href}
                                 href={item.href!}
                                 onClick={() => {
-                                    // Close any open submenu when clicking bottom menu items
                                     setOpenSubmenu(null);
                                 }}
                                 className={cn(
@@ -471,6 +579,11 @@ export function Sidebar({ isOpen, setIsOpen, isCollapsed, toggleCollapse }: Side
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     {email}
                                 </p>
+                                {role && (
+                                    <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 capitalize">
+                                        {role.replace("_", " ")}
+                                    </span>
+                                )}
                             </div>
 
                             {/* Divider */}
