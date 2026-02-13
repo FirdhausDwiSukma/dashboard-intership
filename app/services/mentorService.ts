@@ -65,7 +65,7 @@ const getHeaders = () => ({
 });
 
 interface ApiResponse<T> {
-    status: boolean;
+    success: boolean;
     message: string;
     data: T;
 }

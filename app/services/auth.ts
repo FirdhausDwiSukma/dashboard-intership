@@ -1,8 +1,7 @@
 import apiClient from '../lib/axios';
 
-// Define the shape of the login response
-interface LoginResponse {
-    message: string;
+// Define the shape of the login response data (inside the 'data' field)
+interface LoginData {
     token: string;
     user: {
         id: number;
@@ -15,10 +14,18 @@ interface LoginResponse {
     };
 }
 
+// Standardized API response wrapper
+interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data: T;
+}
+
 // Define the shape of the error response from backend
 interface ApiError {
     response?: {
         data?: {
+            message?: string;
             error?: string;
         };
     };
@@ -27,28 +34,31 @@ interface ApiError {
 
 export const authService = {
     // Login function
-    login: async (username: string, password: string): Promise<LoginResponse> => {
+    login: async (username: string, password: string): Promise<LoginData> => {
         try {
-            const response = await apiClient.post<LoginResponse>('/login', {
+            const response = await apiClient.post<ApiResponse<LoginData>>('/api/login', {
                 username,
                 password,
             });
-            return response.data;
+            return response.data.data;
         } catch (error: any) {
             // Throw a clean error message
             const apiError = error as ApiError;
-            const errorData = apiError.response?.data?.error;
+            const errorMessage = apiError.response?.data?.message;
 
             let message = 'Login failed. Please check your connection.';
 
-            if (errorData === 'USER_NOT_FOUND') {
-                message = 'Akun tidak ditemukan.';
-            } else if (errorData === 'INVALID_PASSWORD') {
-                message = 'Password salah.';
-            } else if (errorData === 'ACCOUNT_INACTIVE') {
-                message = 'Akun anda tidak aktif. Silahkan hubungi administrator.';
-            } else if (errorData) {
-                message = errorData;
+            if (errorMessage) {
+                // Map backend messages to user-friendly messages
+                if (errorMessage.includes('not found') || errorMessage.includes('Not found')) {
+                    message = 'Akun tidak ditemukan.';
+                } else if (errorMessage.includes('Invalid password') || errorMessage.includes('invalid password')) {
+                    message = 'Password salah.';
+                } else if (errorMessage.includes('inactive') || errorMessage.includes('Inactive')) {
+                    message = 'Akun anda tidak aktif. Silahkan hubungi administrator.';
+                } else {
+                    message = errorMessage;
+                }
             }
 
             throw new Error(message);

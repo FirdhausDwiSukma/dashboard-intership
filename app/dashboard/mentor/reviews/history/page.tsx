@@ -39,12 +39,11 @@ export default function ReviewHistoryPage() {
         try {
             setLoading(true);
             const data = await mentorService.getReviewHistory(page, limit);
-            // API might return { reviews: [], total: number } or just an array
             if (Array.isArray(data)) {
                 setReviews(data);
                 setTotal(data.length);
             } else {
-                setReviews(data.reviews || data.data || []);
+                setReviews(data.items || data.reviews || []);
                 setTotal(data.total || 0);
             }
         } catch (err: any) {

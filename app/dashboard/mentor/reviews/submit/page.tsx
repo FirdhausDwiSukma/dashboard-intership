@@ -98,8 +98,8 @@ export default function SubmitReviewPage() {
                         type="button"
                         onClick={() => onChange(score)}
                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all flex-1 ${value === score
-                                ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
-                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                            ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
                             }`}
                     >
                         <Star className={`w-5 h-5 ${value >= score ? "text-amber-400 fill-amber-400" : "text-gray-300"}`} />
@@ -133,7 +133,7 @@ export default function SubmitReviewPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
                 <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
@@ -158,13 +158,21 @@ export default function SubmitReviewPage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Intern</label>
                     <select
                         value={formData.intern_id}
-                        onChange={(e) => setFormData({ ...formData, intern_id: parseInt(e.target.value) })}
+                        onChange={(e) => {
+                            const selectedUserId = parseInt(e.target.value);
+                            const selectedIntern = interns.find((i) => i.user_id === selectedUserId);
+                            setFormData({
+                                ...formData,
+                                intern_id: selectedUserId,
+                                period: selectedIntern?.batch || formData.period,
+                            });
+                        }}
                         className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
                         required
                     >
                         <option value={0}>-- Select an intern --</option>
-                        {interns.map((intern) => (
-                            <option key={intern.intern_profile_id} value={intern.intern_profile_id}>
+                        {interns.filter((intern) => !intern.has_review).map((intern) => (
+                            <option key={intern.user_id} value={intern.user_id}>
                                 {intern.full_name} ({intern.division})
                             </option>
                         ))}
